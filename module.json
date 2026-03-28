@@ -1,0 +1,46 @@
+{
+	"id": "fbl-enhancements",
+	"name": "fbl-enhancements",
+	"title": "Forbidden Lands Enhancements",
+	"description": "Optional automation and combat enhancements for Forbidden Lands.",
+	"version": "0.0.1",
+	"authors": [
+		{
+			"name": "NeocorDK"
+		}
+	],
+	"compatibility": {
+		"minimum": "13",
+		"verified": "13",
+		"maximum": "13"
+	},
+	"esmodules": ["scripts/main.js"],
+	"styles": ["styles/fbl-enhancements.css"],
+	"languages": [
+		{
+			"lang": "en",
+			"name": "English",
+			"path": "lang/en.json"
+		},
+		{
+			"lang": "ru",
+			"name": "Русский",
+			"path": "lang/ru.json"
+		}
+	],
+	"relationships": {
+		"requires": [
+			{
+				"id": "forbidden-lands",
+				"type": "system",
+				"manifest": "https://raw.githubusercontent.com/fvtt-fria-ligan/forbidden-lands-foundry-vtt/main/system.json",
+				"compatibility": {
+					"minimum": "13"
+				}
+			}
+		]
+	},
+	"url": "https://github.com/NeocorDK/fbl-enhancements",
+	"manifest": "https://raw.githubusercontent.com/NeocorDK/fbl-enhancements/main/module.json",
+	"download": "https://github.com/NeocorDK/fbl-enhancements/releases/download/v0.0.1/fbl-enhancements.zip"
+}
