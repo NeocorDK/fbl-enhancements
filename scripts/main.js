@@ -26,6 +26,26 @@ function registerSettings() {
 	});
 }
 
+function registerHandlebarsHelpers() {
+	Handlebars.registerHelper("damageType", (type) => {
+		const normalized = String(type || "")
+			.toLowerCase()
+			.trim();
+		const map = {
+			stab: "ATTACK.STAB",
+			slash: "ATTACK.SLASH",
+			blunt: "ATTACK.BLUNT",
+			fire: "ATTACK.FIRE",
+			empathy: "ATTACK.EMPATHY",
+			endurance: "ATTACK.ENDURANCE",
+			fear: "ATTACK.FEAR",
+			other: "ATTACK.OTHER",
+		};
+		const key = map[normalized] || "ATTACK.OTHER";
+		return game.i18n.localize(key);
+	});
+}
+
 function getAttackState(message) {
 	return message.getFlag(MODULE_ID, ATTACK_STATE_FLAG) || {};
 }
@@ -177,9 +197,9 @@ function getParryItem(actor) {
 function getDamageAttribute(actor, damageType = "other") {
 	const type = String(damageType || "").toLowerCase();
 	if (type === "empathy") return "empathy";
-	if (type === "wits" || type === "fear") return "wits";
+	if (type === "fear") return "wits";
 	if (type === "endurance") return "agility";
-	if (["stab", "slash", "blunt", "fire", "non-typical", "other"].includes(type))
+	if (["stab", "slash", "blunt", "fire", "other"].includes(type))
 		return "strength";
 	return null;
 }
@@ -188,7 +208,7 @@ function getCriticalInjuryTableByDamageType(damageType = "blunt") {
 	const type = String(damageType || "").toLowerCase();
 	if (type === "stab" || type === "stabbing")
 		return "Critical Injuries - Stab Wounds";
-	if (type === "slash" || type === "slashing")
+	if (type === "slash")
 		return "Critical Injuries - Slash Wounds";
 	if (type === "blunt") return "Critical Injuries - Blunt Wounds";
 	return null;
@@ -449,6 +469,7 @@ function resolveRollActor(rollHandler) {
 async function tryRollArrowsForAttack(rollHandler) {
 	if (!isEnabled(SETTING_AUTO_ARROWS)) return;
 	if (!rollHandler?.options) return;
+	if (rollHandler.options.__fblEnhArrowsRolled) return;
 	if (rollHandler.options.actorType !== "character") return;
 	if (!rollHandler.options.isAttack && !rollHandler.gear?.damage) return;
 
@@ -479,9 +500,11 @@ async function tryRollArrowsForAttack(rollHandler) {
 	if (!isRangedAttack || !usesArrows) return;
 
 	try {
+		rollHandler.options.__fblEnhArrowsRolled = true;
 		await actor.sheet.rollConsumable("arrows");
 	} catch (error) {
 		console.warn(`${MODULE_ID} | Could not roll arrows resource die`, error);
+		rollHandler.options.__fblEnhArrowsRolled = false;
 	}
 }
 
@@ -494,6 +517,12 @@ function patchRollHandler() {
 	RollHandler.createRoll = async function createRollPatched(data = {}, options = {}) {
 		const nextData = foundry.utils.deepClone(data);
 		const nextOptions = foundry.utils.deepClone(options);
+		const isSpellTemplate = String(nextOptions.template || "").includes(
+			"spell-dialog.hbs",
+		);
+		if (!isSpellTemplate && !nextOptions.template) {
+			nextOptions.template = `modules/${MODULE_ID}/templates/dialog.hbs`;
+		}
 
 		const hasDamage =
 			Number(nextOptions.damage || nextData?.gear?.damage || 0) > 0 ||
@@ -503,13 +532,18 @@ function patchRollHandler() {
 			const itemId = Array.isArray(nextOptions.itemId)
 				? nextOptions.itemId[0]
 				: nextOptions.itemId;
+			const item = actor?.items?.get?.(itemId) || null;
 			const actionName = String(nextData?.title || "").toLowerCase().trim();
 			const typeOptions =
 				nextOptions.damageTypeOptions ||
 				computeDamageTypeOptions(actor, itemId, actionName);
 			nextOptions.damageTypeOptions = typeOptions;
 			nextOptions.damageType =
-				nextOptions.damageType || typeOptions[0]?.value || "other";
+				nextOptions.damageType ||
+				nextData?.gear?.damageType ||
+				item?.system?.damageType ||
+				typeOptions[0]?.value ||
+				"other";
 		}
 
 		return originalCreateRoll.call(this, nextData, nextOptions);
@@ -559,6 +593,7 @@ function patchRollHandler() {
 			damageType: this.damageType || options.damageType || "other",
 			attackCategory,
 			attackAmmo,
+			__fblEnhArrowsRolled: !!this.options.__fblEnhArrowsRolled,
 			targetTokenId: options.targetTokenId || target?.id || null,
 			targetSceneId:
 				options.targetSceneId ||
@@ -570,6 +605,133 @@ function patchRollHandler() {
 	};
 
 	RollHandler.prototype.__fblEnhancementsPatched = true;
+}
+
+function patchItemDocument() {
+	const ItemClass = CONFIG.Item?.documentClass;
+	if (!ItemClass?.prototype || ItemClass.prototype.__fblEnhancementsPatched) return;
+
+	const originalGetRollData = ItemClass.prototype.getRollData;
+	if (typeof originalGetRollData === "function") {
+		ItemClass.prototype.getRollData = function getRollDataPatched(...args) {
+			const data = originalGetRollData.apply(this, args) || {};
+			const current = String(
+				data.damageType || this.system?.damageType || "other",
+			)
+				.toLowerCase()
+				.trim();
+			const allowed = new Set([
+				"stab",
+				"slash",
+				"blunt",
+				"fire",
+				"empathy",
+				"endurance",
+				"fear",
+				"other",
+			]);
+			return {
+				...data,
+				damageType: allowed.has(current) ? current : "other",
+			};
+		};
+	}
+
+	ItemClass.prototype.__fblEnhancementsPatched = true;
+}
+
+function patchMonsterAttackSheet() {
+	const classes = Object.values(CONFIG.Item?.sheetClasses || {});
+	const monsterSheetClass = classes.find((sheetClass) => {
+		const types = Object.keys(sheetClass?.types || {});
+		return types.includes("monsterAttack");
+	})?.cls;
+	if (!monsterSheetClass?.prototype || monsterSheetClass.prototype.__fblEnhancementsPatched)
+		return;
+
+	const originalGetData = monsterSheetClass.prototype.getData;
+	monsterSheetClass.prototype.getData = async function getDataPatched(options = {}) {
+		const data = await originalGetData.call(this, options);
+		data.damageTypeOptions = [
+			{ value: "stab", label: "ATTACK.STAB" },
+			{ value: "slash", label: "ATTACK.SLASH" },
+			{ value: "blunt", label: "ATTACK.BLUNT" },
+			{ value: "fire", label: "ATTACK.FIRE" },
+			{ value: "empathy", label: "ATTACK.EMPATHY" },
+			{ value: "endurance", label: "ATTACK.ENDURANCE" },
+			{ value: "fear", label: "ATTACK.FEAR" },
+			{ value: "other", label: "ATTACK.OTHER" },
+		];
+		return data;
+	};
+
+	monsterSheetClass.prototype.__fblEnhancementsPatched = true;
+}
+
+function patchMonsterSheet() {
+	const classes = Object.values(CONFIG.Actor?.sheetClasses || {});
+	const monsterSheetClass = classes.find((sheetClass) => {
+		const types = Object.keys(sheetClass?.types || {});
+		return types.includes("monster");
+	})?.cls;
+	if (!monsterSheetClass?.prototype || monsterSheetClass.prototype.__fblEnhancementsPatched)
+		return;
+
+	const originalRollSpecificAttack = monsterSheetClass.prototype.rollSpecificAttack;
+	if (typeof originalRollSpecificAttack === "function") {
+		monsterSheetClass.prototype.rollSpecificAttack = async function rollSpecificAttackPatched(
+			attackId,
+		) {
+			if (!this.actor?.canAct) return originalRollSpecificAttack.call(this, attackId);
+			const attack = this.actor.items.get(attackId);
+			if (!attack || attack.type !== "monsterAttack")
+				return originalRollSpecificAttack.call(this, attackId);
+
+			const FBLRollClass =
+				globalThis.FBLRoll ||
+				CONFIG.Dice.rolls?.find((cls) => cls?.name === "FBLRoll");
+			if (!FBLRollClass?.create) return originalRollSpecificAttack.call(this, attackId);
+
+			const gear = attack.getRollData();
+			const rollOptions =
+				typeof this.getRollOptions === "function" ? this.getRollOptions() : {};
+			const rawDamageType = String(
+				attack.system?.damageType || gear.damageType || "other",
+			)
+				.toLowerCase()
+				.trim();
+			const allowed = new Set([
+				"stab",
+				"slash",
+				"blunt",
+				"fire",
+				"empathy",
+				"endurance",
+				"fear",
+				"other",
+			]);
+			const damageType = allowed.has(rawDamageType) ? rawDamageType : "other";
+			const options = {
+				name: attack.name,
+				maxPush: rollOptions.unlimitedPush ? 10000 : "0",
+				isAttack: true,
+				isMonsterAttack: true,
+				damage: Number(attack.system?.damage || attack.damage || 0),
+				damageType,
+				gear: { ...gear, damageType },
+				attack,
+				...rollOptions,
+			};
+			const dice = attack.system?.usingStrength
+				? Number(this.actor.attributes?.strength?.value || 0)
+				: Number(attack.system?.dice || 0);
+			const roll = FBLRollClass.create(`${dice}db[${attack.name}]`, {}, options);
+			await roll.roll();
+			return roll.toMessage();
+		};
+	}
+
+	monsterSheetClass.prototype.__fblEnhancementsPatched = true;
 }
 
 function registerSocket() {
@@ -747,6 +909,7 @@ function registerChatHooks() {
 Hooks.once("init", () => {
 	console.log(`${MODULE_ID} | Initializing module`);
 	registerSettings();
+	registerHandlebarsHelpers();
 });
 
 Hooks.once("setup", () => {
@@ -755,6 +918,9 @@ Hooks.once("setup", () => {
 
 Hooks.once("ready", () => {
 	console.log(`${MODULE_ID} | Module ready`);
+	patchItemDocument();
+	patchMonsterAttackSheet();
+	patchMonsterSheet();
 	patchRollClass();
 	patchRollHandler();
 	registerSocket();

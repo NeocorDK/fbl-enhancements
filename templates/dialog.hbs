@@ -1,0 +1,77 @@
+<form class="roll-dialog attack-dialog">
+	<h2>☙ <span contenteditable="true">{{title}}</span> ❧</h2>
+	<div class="container">
+		<div class="dice">
+			<h3>{{localize "MONSTER.DICE"}}</h3>
+			{{#each dice as |die key|}}
+				<label for="{{key}}">{{localize die.label}}:</label>
+				<div class="roll-group-btns">
+					<a class="inc-dec-btns" data-operator="minus" data-type="{{key}}"><i
+							class="fas fa-minus-square"
+						></i></a>
+					<input type="number" id="{{key}}" name="{{key}}" min="0" value="{{die.value}}" /><a
+						class="inc-dec-btns"
+						data-operator="plus"
+						data-type="{{key}}"
+					><i class="fas fa-plus-square"></i></a>
+				</div>
+			{{/each}}
+			<label for="artifact">{{localize "DICE.ARTIFACTS"}}:</label><input
+				type="text"
+				id="artifact"
+				name="artifact"
+				value="{{artifact}}"
+				autocomplete="off"
+			/>
+		</div>
+		<div class="options">
+			<h3>{{localize "MODIFIERS"}}</h3>
+			<div class="legend">
+				<span>{{localize "ACTIVE"}}</span><span>{{localize "Name"}}</span><span>{{localize "VALUE"}}</span>
+			</div>
+			{{#each options.modifiers as |option|}}
+				<div class="modifiers">
+					<input
+						class="option"
+						data-id="{{option.id}}"
+						data-value="{{option.value}}"
+						data-type="{{option.type}}"
+						data-gear-bonus="{{option.gearBonus}}"
+						type="checkbox"
+						data-name="{{option.name}}"
+						name="{{option.gearBonus}}_{{option.name}}_{{option.value}}"
+						id="{{option.gearBonus}}_{{option.name}}_{{option.value}}"
+						{{checked option.active}}
+					/>
+					<label for="{{option.gearBonus}}_{{option.name}}_{{option.value}}"> {{option.name}} </label>
+					<label for="{{option.gearBonus}}_{{option.name}}_{{option.value}}" class="option-value">
+						{{option.value}}
+					</label>
+				</div>
+			{{/each}}
+			<div class="final-modifier">
+				<label for="modifier">{{localize "DICE.MODIFIER"}}:</label><input
+					type="number"
+					id="modifier"
+					name="modifier"
+					value="{{modifier}}"
+				/>
+			</div>
+			{{#if damageTypeOptions.length}}
+				<div class="final-modifier">
+					<label for="damageType">{{localize "FBL_ENHANCEMENTS.ROLL.DAMAGE_TYPE"}}:</label>
+					<select id="damageType" name="damageType">
+						{{selectOptions damageTypeOptions selected=damageType localize=true}}
+					</select>
+				</div>
+			{{/if}}
+		</div>
+	</div>
+	<div class="container form-actions">
+		<button class="fbl-button" type="submit" id="submit"><i class="fas fa-check"></i>
+			{{localize "DICE.ROLL"}}</button><button class="fbl-button" type="reset" id="cancel"><i
+				class="fas fa-times"
+			></i>
+			{{localize "DICE.CANCEL"}}</button>
+	</div>
+</form>

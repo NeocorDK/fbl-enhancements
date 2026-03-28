@@ -1,35 +1,45 @@
-.forbidden-lands .dice-roll .attack-damage-type {
-	display: block;
-	margin: 4px 0 2px;
+.chat-message .message-content .dice-roll .attack-damage-type {
 	text-align: center;
-	font-size: 0.7rem;
+	font-size: var(--font-size-10);
+	line-height: 1.2;
+	margin-top: 6px;
+	margin-bottom: 4px;
+	word-break: break-word;
+}
+
+.chat-message .message-content .dice-roll .dice-buttons.fbl-enh-attack-buttons {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
+	margin-top: 12px;
+	width: 100%;
+}
+
+.chat-message .message-content .dice-roll .dice-buttons.fbl-enh-attack-buttons .fbl-button {
+	display: block;
+	width: 100%;
+	min-height: 29px;
+	padding: 6px 8px;
+	font-family: var(--font-header-sc);
+	font-size: calc(var(--font-size-16) * 0.8);
+	font-weight: 700;
 	line-height: 1.1;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	text-align: center;
+	white-space: normal;
+	word-break: break-word;
+	background: var(--color-theme-background);
+	color: var(--color-theme-text);
+	border: 2px solid #1114;
+	box-shadow: inset 0 0 0 1px #fff6;
 }
 
-.chat-log .chat-message .message-content .dice-roll .dice-buttons.fbl-enh-attack-buttons {
-	display: grid !important;
-	grid-template-columns: 1fr !important;
-	gap: 6px !important;
-	width: 100% !important;
-}
-
-.chat-log
-	.chat-message
+.chat-message
 	.message-content
 	.dice-roll
 	.dice-buttons.fbl-enh-attack-buttons
-	.fbl-button.attack-action {
-	display: block !important;
-	flex: 0 0 100% !important;
-	width: 100% !important;
-	min-width: 100% !important;
-	max-width: 100% !important;
-	min-height: 24px !important;
-	padding: 3px 8px !important;
-	font-size: 0.85em !important;
-	line-height: 1.15 !important;
-	white-space: normal !important;
-	word-break: normal !important;
-	overflow-wrap: anywhere !important;
-	text-align: center !important;
+	.fbl-button:hover {
+	border-color: var(--color-theme-accent);
+	box-shadow: inset 0 0 0 1px #fff8, 0 0 3px #0003;
 }

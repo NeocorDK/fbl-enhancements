@@ -13,9 +13,9 @@
 	</div>
 
 	{{#if (eq roll.type "yz")}}
-		{{#if (and roll.options.isAttack roll.options.damageType)}}
+		{{#if (and roll.options.isAttack (or roll.options.damageType roll.options.attack.system.damageType))}}
 			<div class="attack-damage-type" title="{{localize 'FBL_ENHANCEMENTS.ROLL.DAMAGE_TYPE'}}">
-				{{localize "FBL_ENHANCEMENTS.ROLL.DAMAGE_TYPE"}}: {{damageType roll.options.damageType}}
+				{{localize "FBL_ENHANCEMENTS.ROLL.DAMAGE_TYPE"}}: {{damageType (or roll.options.damageType roll.options.attack.system.damageType)}}
 			</div>
 		{{/if}}
 		<h4 class="dice-total">
