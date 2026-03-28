@@ -1,0 +1,103 @@
+<div class="dice-roll fbl-chat-roll">
+	<div class="fbl-roll-summary" data-action="toggle-roll">
+		<h4 class="dice-formula">
+			{{#if flavor}}{{flavor}}{{else}}{{formula}}{{/if}}
+			{{#if roll.pushed}}&nbsp;-&nbsp;{{localize "PUSHED"}}{{/if}}
+		</h4>
+	</div>
+
+	<div class="fbl-roll-details" hidden>
+		<div class="dice-result">
+			{{{tooltip}}}
+		</div>
+	</div>
+
+	{{#if (eq roll.type "yz")}}
+		{{#if (and roll.options.isAttack roll.options.damageType)}}
+			<div class="attack-damage-type" title="{{localize 'FBL_ENHANCEMENTS.ROLL.DAMAGE_TYPE'}}">
+				{{localize "FBL_ENHANCEMENTS.ROLL.DAMAGE_TYPE"}}: {{damageType roll.options.damageType}}
+			</div>
+		{{/if}}
+		<h4 class="dice-total">
+			<span class="sword" title="{{localize 'DICE.SUCCESSES'}}">x</span>
+			<span class="special-number" title="{{localize 'DICE.SUCCESSES'}}">{{roll.attackSuccess}}</span>
+			{{#if (and roll.options.isAttack (gt roll.attackSuccess 0))}}
+				&nbsp;|&nbsp;
+				<i class="fas fa-tint" title="{{localize 'DAMAGE'}}"></i>
+				<span class="special-number" title="{{localize 'DAMAGE'}}">{{roll.damage}}</span>
+			{{/if}}
+			{{#if (gt roll.baneCount 0)}}
+				&nbsp;|&nbsp;
+				<span class="skullz" title="{{localize 'DICE.BANES'}}">l</span>
+				<span class="special-number" title="{{localize 'DICE.BANES'}}">{{roll.baneCount}}</span>
+			{{/if}}
+		</h4>
+	{{/if}}
+
+	{{#if (eq roll.type "consumable")}}
+		<h4 class="dice-total">
+			<img class="consumable-icon" src="systems/forbidden-lands/assets/assorted/{{roll.options.consumable}}.webp" />
+			<span class="consumable-result">{{total}}</span>
+		</h4>
+	{{/if}}
+
+	{{#if (eq roll.type "spell")}}
+		<h4 class="dice-total">
+			<div><span class="spell-roll power">{{localize "POWER_LEVEL"}}:</span></div>
+			<div><span class="spell-roll result">{{roll.damage}}</span></div>
+		</h4>
+	{{/if}}
+
+	{{#if showInfos}}
+		{{{infos}}}
+	{{/if}}
+
+	<div class="dice-buttons fbl-enh-attack-buttons">
+		{{#if (and
+			pushable
+			(or roll.isOwner user.isGM)
+			(or (not roll.options.isAttack) (not roll.options.attackApplied))
+		)}}
+			<button class="fbl-button push" data-action="push">
+				{{localize "PUSH"}}
+			</button>
+		{{/if}}
+
+		{{#if roll.isMishap}}
+			{{#if roll.mishapTable}}
+				<button class="fbl-button table" data-action="mishap" data-id="{{roll.mishapTable}}">
+					{{localize "MISHAP"}}
+				</button>
+			{{else}}
+				<p style="text-align: center;"><strong>Roll Mishap!</strong></p>
+			{{/if}}
+		{{/if}}
+
+		{{#if (and success (eq roll.mishapType "travel-find-prey"))}}
+			<button class="fbl-button table" data-action="prey">
+				{{localize "ROLL.FOUND_PREY"}}
+			</button>
+		{{/if}}
+
+		{{#if (and roll.options.isAttack (not roll.options.attackApplied))}}
+			{{#if (gt roll.attackSuccess 0)}}
+				<button class="fbl-button attack-action" data-action="apply-damage">
+					{{localize "FBL_ENHANCEMENTS.ROLL.APPLY_DAMAGE"}}
+				</button>
+			{{/if}}
+			{{#unless roll.options.defenseUsed}}
+				<button class="fbl-button attack-action" data-action="defense-dodge">
+					{{localize "FBL_ENHANCEMENTS.ROLL.DEFENSE_DODGE"}}
+				</button>
+				<button class="fbl-button attack-action" data-action="defense-parry">
+					{{localize "FBL_ENHANCEMENTS.ROLL.DEFENSE_PARRY"}}
+				</button>
+			{{/unless}}
+			{{#unless roll.options.armorUsed}}
+				<button class="fbl-button attack-action" data-action="defense-armor">
+					{{localize "FBL_ENHANCEMENTS.ROLL.DEFENSE_ARMOR"}}
+				</button>
+			{{/unless}}
+		{{/if}}
+	</div>
+</div>

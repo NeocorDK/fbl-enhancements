@@ -1,5 +1,29 @@
 {
 	"FBL_ENHANCEMENTS": {
-		"MODULE_TITLE": "Forbidden Lands Enhancements"
+		"MODULE_TITLE": "Forbidden Lands Enhancements",
+		"SETTINGS": {
+			"AUTO_ARROWS": {
+				"NAME": "Automatic arrows resource roll",
+				"HINT": "Automatically roll resource dice for arrows when making ranged attacks with arrows."
+			},
+			"COMBAT_AUTOMATION": {
+				"NAME": "Combat automation in chat",
+				"HINT": "Enable combat action buttons in attack roll chat cards (dodge, parry, armor, apply damage)."
+			}
+		},
+		"ROLL": {
+			"DAMAGE_TYPE": "Damage type",
+			"APPLY_DAMAGE": "Apply damage",
+			"DEFENSE_DODGE": "Dodge",
+			"DEFENSE_PARRY": "Parry",
+			"DEFENSE_ARMOR": "Armor",
+			"WARNING_NO_TARGET": "No target selected for this attack.",
+			"WARNING_NOT_TARGET_OWNER": "You are not an owner of the target actor.",
+			"WARNING_ACTION_FAILED": "Action failed. See console for details.",
+			"WARNING_INVALID_DAMAGE_TYPE": "Could not apply damage: invalid damage type.",
+			"WARNING_INVALID_DAMAGE_ATTRIBUTE": "Could not apply damage: target has no valid damage attribute.",
+			"WARNING_PARRY_NO_SHIELD_RANGED": "Cannot parry a ranged attack without an equipped shield.",
+			"WARNING_PARRY_NO_WEAPON": "Cannot parry without an equipped melee weapon with Parrying."
+		}
 	}
 }
