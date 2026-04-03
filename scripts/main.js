@@ -1,24 +1,24 @@
-const MODULE_ID = "fbl-enhancements";
+﻿const MODULE_ID = "fbl-enhancements";
 const ATTACK_STATE_FLAG = "attackState";
-const SETTING_AUTO_ARROWS = "autoArrowsResourceRoll";
 const SETTING_COMBAT_AUTOMATION = "combatAutomation";
+const SETTING_REST_CONFIRMATION = "restConfirmation";
 
 const l = (key) => game.i18n.localize(`FBL_ENHANCEMENTS.${key}`);
 const isEnabled = (settingKey) => game.settings.get(MODULE_ID, settingKey);
 
 function registerSettings() {
-	game.settings.register(MODULE_ID, SETTING_AUTO_ARROWS, {
-		name: "FBL_ENHANCEMENTS.SETTINGS.AUTO_ARROWS.NAME",
-		hint: "FBL_ENHANCEMENTS.SETTINGS.AUTO_ARROWS.HINT",
+	game.settings.register(MODULE_ID, SETTING_COMBAT_AUTOMATION, {
+		name: "FBL_ENHANCEMENTS.SETTINGS.COMBAT_AUTOMATION.NAME",
+		hint: "FBL_ENHANCEMENTS.SETTINGS.COMBAT_AUTOMATION.HINT",
 		scope: "world",
 		config: true,
 		type: Boolean,
 		default: true,
 	});
 
-	game.settings.register(MODULE_ID, SETTING_COMBAT_AUTOMATION, {
-		name: "FBL_ENHANCEMENTS.SETTINGS.COMBAT_AUTOMATION.NAME",
-		hint: "FBL_ENHANCEMENTS.SETTINGS.COMBAT_AUTOMATION.HINT",
+	game.settings.register(MODULE_ID, SETTING_REST_CONFIRMATION, {
+		name: "FBL_ENHANCEMENTS.SETTINGS.REST_CONFIRMATION.NAME",
+		hint: "FBL_ENHANCEMENTS.SETTINGS.REST_CONFIRMATION.HINT",
 		scope: "world",
 		config: true,
 		type: Boolean,
@@ -293,7 +293,7 @@ async function applyArmorFailureDamage(actor, amount) {
 	let remaining = Number(amount || 0);
 	if (remaining <= 0) return;
 
-	const priorities = { body: 0, head: 1 };
+	const priorities = { head: 0, body: 1 };
 	const armorItems = actor.itemTypes.armor
 		.filter((item) => {
 			const part = item.system?.part;
@@ -322,9 +322,9 @@ async function applyArmorFailureDamage(actor, amount) {
 
 async function applyAttackArmorDamage(targetActor, roll) {
 	if (targetActor.type === "monster") return;
+	if (Number(roll.damage || 0) <= 0) return;
 	const armorFailure = Number(roll.options?.armorFailure || 0);
 	if (!armorFailure) return;
-	if (roll.attackSuccess <= 0) return;
 	await applyArmorFailureDamage(targetActor, armorFailure);
 }
 
@@ -453,61 +453,6 @@ function computeDamageTypeOptions(actor, itemId, actionName) {
 	return options.length ? options : defaults;
 }
 
-function resolveRollActor(rollHandler) {
-	const cls = globalThis.FBLRollHandler;
-	if (cls?.resolveActor) {
-		const actor = cls.resolveActor({
-			actor: rollHandler.options?.actorId,
-			scene: rollHandler.options?.sceneId,
-			token: rollHandler.options?.tokenId,
-		});
-		if (actor) return actor;
-	}
-	return game.actors?.get(rollHandler.options?.actorId) || null;
-}
-
-async function tryRollArrowsForAttack(rollHandler) {
-	if (!isEnabled(SETTING_AUTO_ARROWS)) return;
-	if (!rollHandler?.options) return;
-	if (rollHandler.options.__fblEnhArrowsRolled) return;
-	if (rollHandler.options.actorType !== "character") return;
-	if (!rollHandler.options.isAttack && !rollHandler.gear?.damage) return;
-
-	const actor = resolveRollActor(rollHandler);
-	if (!actor?.sheet?.rollConsumable) return;
-
-	const itemId = Array.isArray(rollHandler.options.itemId)
-		? rollHandler.options.itemId[0]
-		: rollHandler.options.itemId;
-	const item = itemId ? actor.items.get(itemId) : null;
-
-	const gearCategory = String(rollHandler.gear?.category || "")
-		.toLowerCase()
-		.trim();
-	const gearAmmo = String(rollHandler.gear?.ammo || "")
-		.toLowerCase()
-		.trim();
-	const itemCategory = String(item?.system?.category || "")
-		.toLowerCase()
-		.trim();
-	const itemAmmo = String(item?.system?.ammo || "")
-		.toLowerCase()
-		.trim();
-
-	const isRangedAttack =
-		gearCategory.includes("ranged") || itemCategory.includes("ranged");
-	const usesArrows = gearAmmo === "arrows" || itemAmmo === "arrows";
-	if (!isRangedAttack || !usesArrows) return;
-
-	try {
-		rollHandler.options.__fblEnhArrowsRolled = true;
-		await actor.sheet.rollConsumable("arrows");
-	} catch (error) {
-		console.warn(`${MODULE_ID} | Could not roll arrows resource die`, error);
-		rollHandler.options.__fblEnhArrowsRolled = false;
-	}
-}
-
 function patchRollHandler() {
 	const RollHandler = globalThis.FBLRollHandler;
 	if (!RollHandler?.prototype || RollHandler.prototype.__fblEnhancementsPatched)
@@ -577,7 +522,6 @@ function patchRollHandler() {
 		const { damageType, ...rest } = formData;
 		if (damageType) this.damageType = damageType;
 		else if (!this.damageType) this.damageType = this.options?.damageType || "other";
-		await tryRollArrowsForAttack(this);
 		return originalHandleYZ.call(this, rest);
 	};
 
@@ -593,7 +537,6 @@ function patchRollHandler() {
 			damageType: this.damageType || options.damageType || "other",
 			attackCategory,
 			attackAmmo,
-			__fblEnhArrowsRolled: !!this.options.__fblEnhArrowsRolled,
 			targetTokenId: options.targetTokenId || target?.id || null,
 			targetSceneId:
 				options.targetSceneId ||
@@ -734,6 +677,37 @@ function patchMonsterSheet() {
 	monsterSheetClass.prototype.__fblEnhancementsPatched = true;
 }
 
+function patchItemSheetsResizable() {
+	const sheetClasses = Object.values(CONFIG.Item?.sheetClasses || {});
+	for (const entry of sheetClasses) {
+		const cls = entry?.cls;
+		if (!cls?.prototype) continue;
+		if (cls.prototype.__fblEnhResizablePatched) continue;
+
+		const descriptor = Object.getOwnPropertyDescriptor(cls, "defaultOptions");
+		if (descriptor?.get) {
+			const originalGetDefaultOptions = descriptor.get.bind(cls);
+			Object.defineProperty(cls, "defaultOptions", {
+				get() {
+					const options = originalGetDefaultOptions();
+					options.resizable = true;
+					return options;
+				},
+			});
+		}
+
+		const originalRender = cls.prototype._render;
+		if (typeof originalRender !== "function") continue;
+
+		cls.prototype._render = async function renderPatched(...args) {
+			this.options.resizable = true;
+			return originalRender.apply(this, args);
+		};
+
+		cls.prototype.__fblEnhResizablePatched = true;
+	}
+}
+
 function registerSocket() {
 	game.socket.on(`module.${MODULE_ID}`, async (data) => {
 		if (data?.operation !== "updateAttackState") return;
@@ -750,43 +724,6 @@ function registerSocket() {
 }
 
 function registerChatHooks() {
-	Hooks.on("createChatMessage", (message) => {
-		if (!isEnabled(SETTING_AUTO_ARROWS)) return;
-		const roll = message?.rolls?.[0];
-		if (!roll?.options?.isAttack) return;
-		if (roll.pushed) return;
-		if (roll.options.__fblEnhArrowsRolled) return;
-
-		const actor = game.actors?.get(roll.options?.actorId);
-		if (!actor?.sheet?.rollConsumable) return;
-		if (roll.options?.actorType !== "character") return;
-
-		const category = String(roll.options?.attackCategory || "")
-			.toLowerCase()
-			.trim();
-		const ammo = String(roll.options?.attackAmmo || "")
-			.toLowerCase()
-			.trim();
-
-		const itemId = Array.isArray(roll.options?.itemId)
-			? roll.options.itemId[0]
-			: roll.options?.itemId;
-		const item = itemId ? actor.items?.get?.(itemId) : null;
-		const itemCategory = String(item?.system?.category || "")
-			.toLowerCase()
-			.trim();
-		const itemAmmo = String(item?.system?.ammo || "")
-			.toLowerCase()
-			.trim();
-
-		const isRanged = category.includes("ranged") || itemCategory.includes("ranged");
-		const usesArrows = ammo === "arrows" || itemAmmo === "arrows";
-		if (!isRanged || !usesArrows) return;
-
-		roll.options.__fblEnhArrowsRolled = true;
-		void actor.sheet.rollConsumable("arrows");
-	});
-
 	Hooks.on("createChatMessage", (message) => {
 		if (!isEnabled(SETTING_COMBAT_AUTOMATION)) return;
 		const roll = message?.rolls?.[0];
@@ -906,6 +843,109 @@ function registerChatHooks() {
 	});
 }
 
+function registerRestConfirmationHook() {
+	Hooks.on("getActorSheetHeaderButtons", (_app, buttons) => {
+		const restButton = buttons.find((button) => button.class === "rest-up");
+		if (!restButton || restButton.__fblEnhRestWrapped) return;
+
+		const originalOnClick = restButton.onclick;
+		restButton.onclick = async (event) => {
+			if (!isEnabled(SETTING_REST_CONFIRMATION))
+				return originalOnClick?.(event);
+			const confirmed = await Dialog.confirm({
+				title: l("REST_CONFIRM.TITLE"),
+				content: `<p>${l("REST_CONFIRM.CONTENT")}</p>`,
+				yes: () => true,
+				no: () => false,
+				defaultYes: false,
+			});
+			if (!confirmed) return;
+			return originalOnClick?.(event);
+		};
+		restButton.__fblEnhRestWrapped = true;
+	});
+
+	// Fallback: intercept already-rendered REST buttons directly in Actor sheets.
+	Hooks.on("renderActorSheet", (app, html) => {
+		const root = html?.[0] || html;
+		if (!root) return;
+		const restButtons = root.querySelectorAll?.(".rest-up") || [];
+
+		for (const button of restButtons) {
+			if (button.dataset?.fblEnhRestBound === "1") continue;
+			button.dataset.fblEnhRestBound = "1";
+
+			button.addEventListener(
+				"click",
+				async (event) => {
+					if (!isEnabled(SETTING_REST_CONFIRMATION)) return;
+					event.preventDefault();
+					event.stopImmediatePropagation();
+					const confirmed = await Dialog.confirm({
+						title: l("REST_CONFIRM.TITLE"),
+						content: `<p>${l("REST_CONFIRM.CONTENT")}</p>`,
+						yes: () => true,
+						no: () => false,
+						defaultYes: false,
+					});
+					if (!confirmed) return;
+					await app.actor?.rest?.();
+				},
+				true,
+			);
+		}
+	});
+}
+
+function registerCollapseHintHook() {
+	Hooks.on("getActorSheetHeaderButtons", (app, buttons) => {
+		if (app.actor?.type !== "character") return;
+		const hasHint = buttons.some((button) => button.class === "collapse-hint");
+		if (hasHint) return;
+
+		buttons.unshift({
+			label: l("COLLAPSE_HINT.LABEL"),
+			class: "collapse-hint",
+			icon: "fas fa-expand-arrows-alt",
+			onclick: () => false,
+		});
+	});
+
+	Hooks.on("renderActorSheet", (app, html) => {
+		if (app.actor?.type !== "character") return;
+		const root = html?.[0] || html;
+		if (!root) return;
+		const hintButtons = root.querySelectorAll?.(
+			".window-header .header-button.collapse-hint",
+		);
+		if (!hintButtons?.length) return;
+
+		for (const button of hintButtons) {
+			if (button.dataset?.fblEnhCollapseHintBound === "1") continue;
+			button.dataset.fblEnhCollapseHintBound = "1";
+			button.setAttribute("aria-hidden", "true");
+			button.setAttribute("tabindex", "-1");
+			button.setAttribute("title", l("COLLAPSE_HINT.LABEL"));
+			button.addEventListener(
+				"click",
+				(event) => {
+					event.preventDefault();
+					event.stopImmediatePropagation();
+				},
+				true,
+			);
+			button.addEventListener(
+				"dblclick",
+				(event) => {
+					event.preventDefault();
+					event.stopImmediatePropagation();
+				},
+				true,
+			);
+		}
+	});
+}
+
 Hooks.once("init", () => {
 	console.log(`${MODULE_ID} | Initializing module`);
 	registerSettings();
@@ -919,10 +959,15 @@ Hooks.once("setup", () => {
 Hooks.once("ready", () => {
 	console.log(`${MODULE_ID} | Module ready`);
 	patchItemDocument();
+	patchItemSheetsResizable();
 	patchMonsterAttackSheet();
 	patchMonsterSheet();
 	patchRollClass();
 	patchRollHandler();
 	registerSocket();
 	registerChatHooks();
+	registerRestConfirmationHook();
+	registerCollapseHintHook();
 });
+
+

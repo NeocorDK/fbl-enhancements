@@ -1,0 +1,36 @@
+﻿{
+  "FBL_ENHANCEMENTS": {
+    "MODULE_TITLE": "Mejoras de Forbidden Lands",
+    "REST_CONFIRM": {
+      "TITLE": "Confirmar descanso",
+      "CONTENT": "¿Seguro que quieres descansar?"
+    },
+    "SETTINGS": {
+      "COMBAT_AUTOMATION": {
+        "NAME": "Automatización de combate en el chat",
+        "HINT": "Activa los botones de acciones de combate en las tiradas de ataque del chat (esquivar, parar, armadura, aplicar daño)."
+      },
+      "REST_CONFIRMATION": {
+        "NAME": "Diálogo de confirmación de descanso",
+        "HINT": "Muestra una ventana de confirmación antes de ejecutar la acción Descansar en las hojas de personaje."
+      }
+    },
+    "ROLL": {
+      "DAMAGE_TYPE": "Tipo de daño",
+      "APPLY_DAMAGE": "Aplicar daño",
+      "DEFENSE_DODGE": "Esquivar",
+      "DEFENSE_PARRY": "Parar",
+      "DEFENSE_ARMOR": "Armadura",
+      "WARNING_NO_TARGET": "No hay objetivo seleccionado para este ataque.",
+      "WARNING_NOT_TARGET_OWNER": "No eres propietario del actor objetivo.",
+      "WARNING_ACTION_FAILED": "La acción falló. Revisa la consola para más detalles.",
+      "WARNING_INVALID_DAMAGE_TYPE": "No se pudo aplicar daño: tipo de daño no válido.",
+      "WARNING_INVALID_DAMAGE_ATTRIBUTE": "No se pudo aplicar daño: el objetivo no tiene un atributo de daño válido.",
+      "WARNING_PARRY_NO_SHIELD_RANGED": "No se puede parar un ataque a distancia sin un escudo equipado.",
+      "WARNING_PARRY_NO_WEAPON": "No se puede parar sin un arma cuerpo a cuerpo equipada con Parrying."
+    },
+    "COLLAPSE_HINT": {
+      "LABEL": "Doble clic en esta zona para expandir"
+    }
+  }
+}

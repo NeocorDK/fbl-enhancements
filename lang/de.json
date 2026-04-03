@@ -1,0 +1,36 @@
+﻿{
+  "FBL_ENHANCEMENTS": {
+    "MODULE_TITLE": "Forbidden Lands Erweiterungen",
+    "REST_CONFIRM": {
+      "TITLE": "Rasten bestätigen",
+      "CONTENT": "Möchtest du wirklich rasten?"
+    },
+    "SETTINGS": {
+      "COMBAT_AUTOMATION": {
+        "NAME": "Kampfautomatisierung im Chat",
+        "HINT": "Aktiviert Kampfaktions-Schaltflächen in Angriffswürfen im Chat (Ausweichen, Parieren, Rüstung, Schaden anwenden)."
+      },
+      "REST_CONFIRMATION": {
+        "NAME": "Bestätigungsdialog für Rast",
+        "HINT": "Zeigt vor der Aktion Rasten auf Charakterbögen eine Bestätigung an."
+      }
+    },
+    "ROLL": {
+      "DAMAGE_TYPE": "Schadensart",
+      "APPLY_DAMAGE": "Schaden anwenden",
+      "DEFENSE_DODGE": "Ausweichen",
+      "DEFENSE_PARRY": "Parieren",
+      "DEFENSE_ARMOR": "Rüstung",
+      "WARNING_NO_TARGET": "Für diesen Angriff ist kein Ziel ausgewählt.",
+      "WARNING_NOT_TARGET_OWNER": "Du bist kein Besitzer des Ziel-Akteurs.",
+      "WARNING_ACTION_FAILED": "Aktion fehlgeschlagen. Details in der Konsole.",
+      "WARNING_INVALID_DAMAGE_TYPE": "Schaden konnte nicht angewendet werden: ungültige Schadensart.",
+      "WARNING_INVALID_DAMAGE_ATTRIBUTE": "Schaden konnte nicht angewendet werden: Ziel hat kein gültiges Schadensattribut.",
+      "WARNING_PARRY_NO_SHIELD_RANGED": "Fernangriffe können ohne ausgerüsteten Schild nicht pariert werden.",
+      "WARNING_PARRY_NO_WEAPON": "Parieren ist ohne ausgerüstete Nahkampfwaffe mit Parrying nicht möglich."
+    },
+    "COLLAPSE_HINT": {
+      "LABEL": "Doppelklick auf diesen Bereich zum Aufklappen"
+    }
+  }
+}

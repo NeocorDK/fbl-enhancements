@@ -59,8 +59,8 @@ Monster actors are excluded from trauma table rolls.
 
 ### 7. Armor side effects (gear damage)
 If armor defense roll produces banes/failures and incoming attack is still successful, armor item bonuses are reduced:
-- body armor first
-- then helmet
+- helmet first
+- then body armor
 
 Monsters are excluded from armor item degradation.
 
@@ -68,15 +68,9 @@ Monsters are excluded from armor item degradation.
 - Ranged attacks cannot be parried unless the defender has an equipped shield.
 - Parry requires an equipped melee weapon with the `parrying` feature.
 
-### 9. Optional automatic arrows resource roll
-For ranged attacks that use `arrows`, the module can auto-trigger the arrows resource die roll.
-
 ## Module settings
 The module adds world settings (checkboxes):
-- `Automatic arrows resource roll`
 - `Combat automation in chat`
-
-Both features can be enabled/disabled independently.
 
 ## How it works (technical overview)
 - Uses runtime patches/hooks only (no direct modifications to base Forbidden Lands system files).
