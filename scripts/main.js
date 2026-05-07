@@ -1,5 +1,6 @@
 ﻿const MODULE_ID = "fbl-enhancements";
 const ATTACK_STATE_FLAG = "attackState";
+const DEFENSE_SYNC_STATE_FLAG = "linkedAttackSyncState";
 const SETTING_COMBAT_AUTOMATION = "combatAutomation";
 const SETTING_REST_CONFIRMATION = "restConfirmation";
 
@@ -146,9 +147,7 @@ function canCurrentUserUseAttackActions(message, roll) {
 }
 
 async function postRollWarning(localizationKey) {
-	return ChatMessage.create({
-		content: `<div class="forbidden-lands chat-item"><p>${l(localizationKey)}</p></div>`,
-	});
+	ui.notifications.warn(l(localizationKey));
 }
 
 function getAttackItem(roll) {
@@ -341,19 +340,58 @@ function getDefenseSourceRoll(roll) {
 	return null;
 }
 
-async function syncLinkedAttackFromDefenseRoll(defenseRoll) {
-	const linkedAttackMessageId = defenseRoll.options?.linkedAttackMessageId;
-	if (!linkedAttackMessageId) return;
-	const attackMessage = game.messages.get(linkedAttackMessageId);
+function getLinkedAttackMeta(message, roll) {
+	const optionId = roll?.options?.linkedAttackMessageId || null;
+	const optionType = roll?.options?.linkedDefenseType || null;
+	if (optionId && optionType) {
+		return { attackMessageId: optionId, defenseType: optionType };
+	}
+
+	const flag = message?.getFlag?.(MODULE_ID, "linkedAttack") || null;
+	if (!flag?.attackMessageId || !flag?.defenseType) return null;
+	return {
+		attackMessageId: String(flag.attackMessageId),
+		defenseType: String(flag.defenseType),
+	};
+}
+
+function getSyncedDefenseState(meta, source) {
+	return {
+		attackMessageId: meta.attackMessageId,
+		defenseType: meta.defenseType,
+		success: source.success,
+		failure: source.failure,
+	};
+}
+
+function isSameSyncState(left, right) {
+	return JSON.stringify(left || null) === JSON.stringify(right || null);
+}
+
+async function syncLinkedAttackFromDefenseMessage(message) {
+	if (!message?.isAuthor) return;
+	const defenseRoll = message?.rolls?.[0];
+	if (!defenseRoll) return;
+	const meta = getLinkedAttackMeta(message, defenseRoll);
+	if (!meta) return;
+
+	const attackMessage = game.messages.get(meta.attackMessageId);
 	if (!attackMessage) return;
 	const attackRoll = attackMessage.rolls?.[0];
 	if (!attackRoll?.options?.isAttack) return;
 
 	applyAttackStateToRoll(attackMessage, attackRoll);
-	const source = getDefenseSourceRoll(defenseRoll);
+	const source = getDefenseSourceRoll({
+		...defenseRoll,
+		options: { ...(defenseRoll.options || {}), linkedDefenseType: meta.defenseType },
+	});
 	if (!source) return;
 
-	switch (defenseRoll.options.linkedDefenseType) {
+	const syncState = getSyncedDefenseState(meta, source);
+	const previousSyncState = message.getFlag?.(MODULE_ID, DEFENSE_SYNC_STATE_FLAG);
+	if (isSameSyncState(previousSyncState, syncState)) return;
+
+	switch (meta.defenseType) {
 		case "armor":
 			attackRoll.options.armorUsed = true;
 			attackRoll.options.armorSuccess = source.success;
@@ -362,12 +400,15 @@ async function syncLinkedAttackFromDefenseRoll(defenseRoll) {
 		case "dodge":
 		case "parry":
 			attackRoll.options.defenseUsed = true;
-			attackRoll.options.defenseType = defenseRoll.options.linkedDefenseType;
+			attackRoll.options.defenseType = meta.defenseType;
 			attackRoll.options.defenseSuccess = source.success;
 			break;
+		default:
+			return;
 	}
 
 	await persistAttackMessageState(attackMessage, attackRoll);
+	await message.setFlag?.(MODULE_ID, DEFENSE_SYNC_STATE_FLAG, syncState);
 }
 
 async function rollTargetDefense(actor, type, attackMessageId, itemId = null) {
@@ -375,6 +416,10 @@ async function rollTargetDefense(actor, type, attackMessageId, itemId = null) {
 	if (result?.roll) {
 		result.roll.options.linkedAttackMessageId = attackMessageId;
 		result.roll.options.linkedDefenseType = type;
+		await result.message?.setFlag?.(MODULE_ID, "linkedAttack", {
+			attackMessageId,
+			defenseType: type,
+		});
 		await result.message?.update({ content: await result.roll.render() });
 	}
 	return result;
@@ -385,6 +430,10 @@ async function rollTargetArmor(actor, attackMessageId) {
 	if (result?.roll) {
 		result.roll.options.linkedAttackMessageId = attackMessageId;
 		result.roll.options.linkedDefenseType = "armor";
+		await result.message?.setFlag?.(MODULE_ID, "linkedAttack", {
+			attackMessageId,
+			defenseType: "armor",
+		});
 		await result.message?.update({ content: await result.roll.render() });
 	}
 	return result;
@@ -726,9 +775,12 @@ function registerSocket() {
 function registerChatHooks() {
 	Hooks.on("createChatMessage", (message) => {
 		if (!isEnabled(SETTING_COMBAT_AUTOMATION)) return;
-		const roll = message?.rolls?.[0];
-		if (!roll?.options?.linkedAttackMessageId) return;
-		void syncLinkedAttackFromDefenseRoll(roll);
+		void syncLinkedAttackFromDefenseMessage(message);
+	});
+
+	Hooks.on("updateChatMessage", (message) => {
+		if (!isEnabled(SETTING_COMBAT_AUTOMATION)) return;
+		void syncLinkedAttackFromDefenseMessage(message);
 	});
 
 	Hooks.on("renderChatMessageHTML", (message, htmlElement) => {
@@ -969,5 +1021,4 @@ Hooks.once("ready", () => {
 	registerRestConfirmationHook();
 	registerCollapseHintHook();
 });
-
 
