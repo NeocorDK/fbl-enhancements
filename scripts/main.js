@@ -4,8 +4,82 @@ const DEFENSE_SYNC_STATE_FLAG = "linkedAttackSyncState";
 const SETTING_COMBAT_AUTOMATION = "combatAutomation";
 const SETTING_REST_CONFIRMATION = "restConfirmation";
 
+const _defenseSyncInFlight = new Set();
+
 const l = (key) => game.i18n.localize(`FBL_ENHANCEMENTS.${key}`);
 const isEnabled = (settingKey) => game.settings.get(MODULE_ID, settingKey);
+
+const CANONICAL_DAMAGE_TYPES = [
+	"stab",
+	"slash",
+	"blunt",
+	"fire",
+	"empathy",
+	"endurance",
+	"wits",
+	"other",
+];
+
+const DAMAGE_TYPE_LABELS = {
+	stab: "ATTACK.STAB",
+	slash: "ATTACK.SLASH",
+	blunt: "ATTACK.BLUNT",
+	fire: "ATTACK.FIRE",
+	empathy: "ATTACK.EMPATHY",
+	endurance: "ATTACK.ENDURANCE",
+	wits: "ATTACK.FEAR",
+	other: "ATTACK.OTHER",
+};
+
+function normalizeDamageType(value, fallback = "other") {
+	const type = String(value || "")
+		.toLowerCase()
+		.trim();
+	if (!type) return fallback;
+	if (type === "fear") return "wits";
+	if (type === "non-typical") return "other";
+	if (type === "stabbing") return "stab";
+	if (type === "slashing") return "slash";
+	return CANONICAL_DAMAGE_TYPES.includes(type) ? type : fallback;
+}
+
+function getDamageTypeLabel(type) {
+	return DAMAGE_TYPE_LABELS[normalizeDamageType(type)] || "ATTACK.OTHER";
+}
+
+function getWeaponDamageTypeOptions(item) {
+	const defaults = [{ value: "other", label: "ATTACK.OTHER" }];
+	if (!item || item.type !== "weapon") return defaults;
+
+	const category = String(item.system?.category || item.itemProperties?.category || "")
+		.toLowerCase()
+		.trim();
+	const ammo = String(item.system?.ammo || item.itemProperties?.ammo || "")
+		.toLowerCase()
+		.trim();
+	const features = item.system?.features || item.itemProperties?.features || {};
+	const options = [];
+
+	if (features.pointed) options.push({ value: "stab", label: "ATTACK.STAB" });
+	if (features.edged) options.push({ value: "slash", label: "ATTACK.SLASH" });
+	if (features.blunt) options.push({ value: "blunt", label: "ATTACK.BLUNT" });
+
+	if (!options.length && category === "ranged") {
+		if (ammo === "arrows") options.push({ value: "stab", label: "ATTACK.STAB" });
+		else options.push({ value: "blunt", label: "ATTACK.BLUNT" });
+	}
+
+	return options.length ? options : defaults;
+}
+
+function getDefaultWeaponDamageType(item, actionName) {
+	if (!item) {
+		if (actionName === "unarmed") return "blunt";
+		return "other";
+	}
+	const options = getWeaponDamageTypeOptions(item);
+	return normalizeDamageType(options[0]?.value || "other");
+}
 
 function registerSettings() {
 	game.settings.register(MODULE_ID, SETTING_COMBAT_AUTOMATION, {
@@ -29,21 +103,7 @@ function registerSettings() {
 
 function registerHandlebarsHelpers() {
 	Handlebars.registerHelper("damageType", (type) => {
-		const normalized = String(type || "")
-			.toLowerCase()
-			.trim();
-		const map = {
-			stab: "ATTACK.STAB",
-			slash: "ATTACK.SLASH",
-			blunt: "ATTACK.BLUNT",
-			fire: "ATTACK.FIRE",
-			empathy: "ATTACK.EMPATHY",
-			endurance: "ATTACK.ENDURANCE",
-			fear: "ATTACK.FEAR",
-			other: "ATTACK.OTHER",
-		};
-		const key = map[normalized] || "ATTACK.OTHER";
-		return game.i18n.localize(key);
+		return game.i18n.localize(getDamageTypeLabel(type));
 	});
 }
 
@@ -65,15 +125,18 @@ function getAttackStatePayload(roll) {
 		armorUsed: !!roll.options.armorUsed,
 		armorSuccess: Number(roll.options.armorSuccess || 0),
 		armorFailure: Number(roll.options.armorFailure || 0),
+		...(roll.options?.damageType
+			? { damageType: normalizeDamageType(roll.options.damageType, "other") }
+			: {}),
 		targetTokenId: roll.options.targetTokenId || null,
 		targetSceneId: roll.options.targetSceneId || null,
 	};
 }
 
 function isActiveGM() {
-	const activeGM = game.users?.activeGM;
 	if (!game.user?.isGM) return false;
-	return !activeGM || activeGM.id === game.user.id;
+	const activeGM = game.users?.activeGM;
+	return !!activeGM && activeGM.id === game.user.id;
 }
 
 async function refreshAttackMessage(message, roll) {
@@ -194,9 +257,9 @@ function getParryItem(actor) {
 }
 
 function getDamageAttribute(actor, damageType = "other") {
-	const type = String(damageType || "").toLowerCase();
+	const type = normalizeDamageType(damageType);
 	if (type === "empathy") return "empathy";
-	if (type === "fear") return "wits";
+	if (type === "wits") return "wits";
 	if (type === "endurance") return "agility";
 	if (["stab", "slash", "blunt", "fire", "other"].includes(type))
 		return "strength";
@@ -204,8 +267,8 @@ function getDamageAttribute(actor, damageType = "other") {
 }
 
 function getCriticalInjuryTableByDamageType(damageType = "blunt") {
-	const type = String(damageType || "").toLowerCase();
-	if (type === "stab" || type === "stabbing")
+	const type = normalizeDamageType(damageType, "blunt");
+	if (type === "stab")
 		return "Critical Injuries - Stab Wounds";
 	if (type === "slash")
 		return "Critical Injuries - Slash Wounds";
@@ -265,7 +328,8 @@ async function applyDamageToTarget(actor, roll) {
 	const damage = Number(roll.damage || 0);
 	if (!damage) return;
 
-	const attribute = getDamageAttribute(actor, roll.options.damageType);
+	const damageType = normalizeDamageType(roll.options.damageType || "other");
+	const attribute = getDamageAttribute(actor, damageType);
 	if (!attribute) {
 		await postRollWarning("ROLL.WARNING_INVALID_DAMAGE_TYPE");
 		return;
@@ -284,7 +348,7 @@ async function applyDamageToTarget(actor, roll) {
 	await actor.update({ [`system.attribute.${attribute}.value`]: newValue });
 
 	if (currentValue > 0 && newValue <= 0) {
-		await tryTriggerTraumaTable(actor, attribute, roll.options.damageType);
+		await tryTriggerTraumaTable(actor, attribute, damageType);
 	}
 }
 
@@ -292,7 +356,7 @@ async function applyArmorFailureDamage(actor, amount) {
 	let remaining = Number(amount || 0);
 	if (remaining <= 0) return;
 
-	const priorities = { head: 0, body: 1 };
+	const priorities = { body: 0, head: 1 };
 	const armorItems = actor.itemTypes.armor
 		.filter((item) => {
 			const part = item.system?.part;
@@ -375,40 +439,46 @@ async function syncLinkedAttackFromDefenseMessage(message) {
 	const meta = getLinkedAttackMeta(message, defenseRoll);
 	if (!meta) return;
 
-	const attackMessage = game.messages.get(meta.attackMessageId);
-	if (!attackMessage) return;
-	const attackRoll = attackMessage.rolls?.[0];
-	if (!attackRoll?.options?.isAttack) return;
+	if (_defenseSyncInFlight.has(message.id)) return;
+	_defenseSyncInFlight.add(message.id);
+	try {
+		const attackMessage = game.messages.get(meta.attackMessageId);
+		if (!attackMessage) return;
+		const attackRoll = attackMessage.rolls?.[0];
+		if (!attackRoll?.options?.isAttack) return;
 
-	applyAttackStateToRoll(attackMessage, attackRoll);
-	const source = getDefenseSourceRoll({
-		...defenseRoll,
-		options: { ...(defenseRoll.options || {}), linkedDefenseType: meta.defenseType },
-	});
-	if (!source) return;
+		applyAttackStateToRoll(attackMessage, attackRoll);
+		const source = getDefenseSourceRoll({
+			...defenseRoll,
+			options: { ...(defenseRoll.options || {}), linkedDefenseType: meta.defenseType },
+		});
+		if (!source) return;
 
-	const syncState = getSyncedDefenseState(meta, source);
-	const previousSyncState = message.getFlag?.(MODULE_ID, DEFENSE_SYNC_STATE_FLAG);
-	if (isSameSyncState(previousSyncState, syncState)) return;
+		const syncState = getSyncedDefenseState(meta, source);
+		const previousSyncState = message.getFlag?.(MODULE_ID, DEFENSE_SYNC_STATE_FLAG);
+		if (isSameSyncState(previousSyncState, syncState)) return;
 
-	switch (meta.defenseType) {
-		case "armor":
-			attackRoll.options.armorUsed = true;
-			attackRoll.options.armorSuccess = source.success;
-			attackRoll.options.armorFailure = source.failure;
-			break;
-		case "dodge":
-		case "parry":
-			attackRoll.options.defenseUsed = true;
-			attackRoll.options.defenseType = meta.defenseType;
-			attackRoll.options.defenseSuccess = source.success;
-			break;
-		default:
-			return;
+		switch (meta.defenseType) {
+			case "armor":
+				attackRoll.options.armorUsed = true;
+				attackRoll.options.armorSuccess = source.success;
+				attackRoll.options.armorFailure = source.failure;
+				break;
+			case "dodge":
+			case "parry":
+				attackRoll.options.defenseUsed = true;
+				attackRoll.options.defenseType = meta.defenseType;
+				attackRoll.options.defenseSuccess = source.success;
+				break;
+			default:
+				return;
+		}
+
+		await persistAttackMessageState(attackMessage, attackRoll);
+		await message.setFlag?.(MODULE_ID, DEFENSE_SYNC_STATE_FLAG, syncState);
+	} finally {
+		_defenseSyncInFlight.delete(message.id);
 	}
-
-	await persistAttackMessageState(attackMessage, attackRoll);
-	await message.setFlag?.(MODULE_ID, DEFENSE_SYNC_STATE_FLAG, syncState);
 }
 
 async function rollTargetDefense(actor, type, attackMessageId, itemId = null) {
@@ -441,9 +511,18 @@ async function rollTargetArmor(actor, attackMessageId) {
 
 function patchRollClass() {
 	const rollClass =
-		CONFIG.Dice.rolls?.find((cls) => cls?.name === "FBLRoll") ||
-		CONFIG.Dice.rolls?.[CONFIG.YZUR?.ROLL?.index || 1];
-	if (!rollClass?.prototype || rollClass.prototype.__fblEnhancementsPatched) return;
+		CONFIG.Dice.rolls?.find((cls) => cls?.name === "FBLRoll") ??
+		(() => {
+			const byIndex = CONFIG.Dice.rolls?.[CONFIG.YZUR?.ROLL?.index ?? 1];
+			if (byIndex)
+				console.warn(`${MODULE_ID} | patchRollClass: FBLRoll not found by name, using index fallback`);
+			return byIndex;
+		})();
+	if (!rollClass?.prototype) {
+		console.warn(`${MODULE_ID} | patchRollClass: FBLRoll not found in CONFIG.Dice.rolls`);
+		return;
+	}
+	if (rollClass.prototype.__fblEnhancementsPatched) return;
 
 	const chatTemplate = `modules/${MODULE_ID}/templates/roll.hbs`;
 	if (CONFIG.YZUR?.ROLL) CONFIG.YZUR.ROLL.chatTemplate = chatTemplate;
@@ -461,14 +540,12 @@ function patchRollClass() {
 	Object.defineProperty(rollClass.prototype, "damage", {
 		configurable: true,
 		get() {
-			const damageType = String(
-				this.options?.damageType || this.options?.attack?.system?.damageType || "",
-			)
-				.toLowerCase()
-				.trim();
+			const damageType = normalizeDamageType(
+				this.options?.damageType || this.options?.attack?.system?.damageType || "other",
+			);
 			const armorSuccess = Number(this.options?.armorSuccess || 0);
 			const isMonsterFear =
-				damageType === "fear" &&
+				damageType === "wits" &&
 				(!!this.options?.isMonsterAttack || this.options?.actorType === "monster");
 			if (isMonsterFear) return Math.max(this.attackSuccess - armorSuccess, 0);
 
@@ -494,109 +571,154 @@ function computeDamageTypeOptions(actor, itemId, actionName) {
 	const item = actor?.items?.get?.(itemId);
 	if (!item || item.type !== "weapon") return defaults;
 
-	const features = item.system?.features || {};
-	const options = [];
-	if (features.pointed) options.push({ value: "stab", label: "ATTACK.STAB" });
-	if (features.edged) options.push({ value: "slash", label: "ATTACK.SLASH" });
-	if (features.blunt) options.push({ value: "blunt", label: "ATTACK.BLUNT" });
-	return options.length ? options : defaults;
+	return getWeaponDamageTypeOptions(item);
 }
 
-function patchRollHandler() {
-	const RollHandler = globalThis.FBLRollHandler;
-	if (!RollHandler?.prototype || RollHandler.prototype.__fblEnhancementsPatched)
-		return;
+function patchRollApi() {
+	if (!game.fbl?.roll || game.fbl.roll.__fblEnhancementsPatched) return;
 
-	const originalCreateRoll = RollHandler.createRoll;
-	RollHandler.createRoll = async function createRollPatched(data = {}, options = {}) {
+	const originalRoll = game.fbl.roll;
+	game.fbl.roll = function rollPatched(data = {}, options = {}) {
 		const nextData = foundry.utils.deepClone(data);
 		const nextOptions = foundry.utils.deepClone(options);
 		const isSpellTemplate = String(nextOptions.template || "").includes(
 			"spell-dialog.hbs",
 		);
-		if (!isSpellTemplate && !nextOptions.template) {
+		if (
+			!isSpellTemplate &&
+			!nextOptions.template &&
+			(nextOptions.damageTypeOptions?.length || nextOptions.isAttack || nextOptions.damage)
+		) {
 			nextOptions.template = `modules/${MODULE_ID}/templates/dialog.hbs`;
 		}
+		if (nextData?.gear) {
+			nextData.gear.damageType = normalizeDamageType(nextData.gear.damageType || "other");
+		}
+		if ("damageType" in nextOptions) {
+			nextOptions.damageType = normalizeDamageType(nextOptions.damageType || "other");
+		}
+		return originalRoll.call(this, nextData, nextOptions);
+	};
 
-		const hasDamage =
-			Number(nextOptions.damage || nextData?.gear?.damage || 0) > 0 ||
-			!!nextOptions.isAttack;
-		if (hasDamage) {
-			const actor = game.actors?.get(nextOptions.actorId) || null;
-			const itemId = Array.isArray(nextOptions.itemId)
-				? nextOptions.itemId[0]
-				: nextOptions.itemId;
-			const item = actor?.items?.get?.(itemId) || null;
-			const actionName = String(nextData?.title || "").toLowerCase().trim();
-			const typeOptions =
-				nextOptions.damageTypeOptions ||
-				computeDamageTypeOptions(actor, itemId, actionName);
-			nextOptions.damageTypeOptions = typeOptions;
-			nextOptions.damageType =
-				nextOptions.damageType ||
-				nextData?.gear?.damageType ||
-				item?.system?.damageType ||
-				typeOptions[0]?.value ||
-				"other";
+	game.fbl.roll.__fblEnhancementsPatched = true;
+}
+
+function patchActorSheets() {
+	const entries = Object.values(CONFIG.Actor?.sheetClasses || {}).flatMap(Object.values);
+	const classes = [...new Set(entries.map((entry) => entry?.cls).filter(Boolean))];
+	if (!classes.length) {
+		console.warn(`${MODULE_ID} | patchActorSheets: no actor sheet classes found`);
+	}
+	for (const sheetClass of classes) {
+		if (!sheetClass?.prototype || sheetClass.prototype.__fblEnhancementsAttackPatched)
+			continue;
+
+		if (typeof sheetClass.prototype.getDamageTypeOptions === "function") {
+			sheetClass.prototype.getDamageTypeOptions = function getDamageTypeOptionsPatched(
+				itemId = undefined,
+				actionName = undefined,
+			) {
+				return computeDamageTypeOptions(this.actor, itemId, actionName);
+			};
 		}
 
-		return originalCreateRoll.call(this, nextData, nextOptions);
-	};
+		if (typeof sheetClass.prototype.rollAction === "function") {
+			const originalRollAction = sheetClass.prototype.rollAction;
+			sheetClass.prototype.rollAction = function rollActionPatched(
+				actionName,
+				itemId = undefined,
+			) {
+				const item = itemId ? this.actor?.items?.get?.(itemId) || null : null;
+				const isWeaponAttack = item?.type === "weapon" || actionName === "unarmed";
+				if (!isWeaponAttack || !game.fbl?.roll) {
+					return originalRollAction.call(this, actionName, itemId);
+				}
+				if (!this.actor.canAct) throw this.broken();
 
-	const originalGetData = RollHandler.prototype.getData;
-	RollHandler.prototype.getData = function getDataPatched(options = {}) {
-		const data = originalGetData.call(this, options);
-		const damageTypeOptions = this.options?.damageTypeOptions || [];
-		return {
-			...data,
-			damageType: this.damageType || this.options?.damageType || "other",
-			damageTypeOptions,
-		};
-	};
+				const properties = itemId ? this.getGear(itemId) : this.getSkill(actionName);
+				const data = {
+					title: actionName,
+					...properties,
+				};
+				if (itemId && data.gear) data.gear.damage = undefined;
 
-	const originalValidate = RollHandler.prototype._validateForm;
-	RollHandler.prototype._validateForm = function validateFormPatched(
-		event,
-		formData,
-	) {
-		const copy = { ...formData };
-		delete copy.damageType;
-		return originalValidate.call(this, event, copy);
-	};
+				const options = {
+					...this.getRollOptions(
+						actionName,
+						data.skill?.name,
+						data.attribute?.name,
+						data.gear?.itemId,
+					),
+				};
 
-	const originalHandleYZ = RollHandler.prototype._handleYZRoll;
-	RollHandler.prototype._handleYZRoll = async function handleYZRollPatched(
-		formData = {},
-	) {
-		const { damageType, ...rest } = formData;
-		if (damageType) this.damageType = damageType;
-		else if (!this.damageType) this.damageType = this.options?.damageType || "other";
-		return originalHandleYZ.call(this, rest);
-	};
+				const damageTypeOptions = computeDamageTypeOptions(this.actor, itemId, actionName);
+				const damageType = getDefaultWeaponDamageType(item, actionName);
+				const baseDamage =
+					actionName === "unarmed"
+						? 1
+						: Number(
+								item?.system?.damage ??
+									item?.itemProperties?.damage ??
+									properties?.gear?.damage ??
+									0,
+						  );
 
-	const originalGetRollOptions = RollHandler.prototype.getRollOptions;
-	RollHandler.prototype.getRollOptions = function getRollOptionsPatched() {
-		const options = originalGetRollOptions.call(this);
-		const target = Array.from(game.user?.targets || [])[0] || null;
-		const attackCategory = this.gear?.category || options.attackCategory || null;
-		const attackAmmo = this.gear?.ammo || options.attackAmmo || null;
-		return {
-			...options,
-			isAttack: !!(options.isAttack || this.damage || this.gear?.damage),
-			damageType: this.damageType || options.damageType || "other",
-			attackCategory,
-			attackAmmo,
-			targetTokenId: options.targetTokenId || target?.id || null,
-			targetSceneId:
-				options.targetSceneId ||
-				target?.scene?.id ||
-				target?.document?.parent?.id ||
-				canvas.scene?.id ||
-				null,
-		};
-	};
+				options.isAttack = true;
+				options.damage = baseDamage;
+				options.damageType = damageType;
+				options.damageTypeOptions = damageTypeOptions;
+				options.template = `modules/${MODULE_ID}/templates/dialog.hbs`;
 
-	RollHandler.prototype.__fblEnhancementsPatched = true;
+				return game.fbl.roll(data, {
+					...options,
+					gears: this.getGears(),
+				});
+			};
+		}
+
+		if (typeof sheetClass.prototype.rollGear === "function") {
+			const originalRollGear = sheetClass.prototype.rollGear;
+			sheetClass.prototype.rollGear = function rollGearPatched(itemId) {
+				const item = this.actor?.items?.get?.(itemId) || null;
+				if (item?.type !== "weapon" || !game.fbl?.roll) {
+					return originalRollGear.call(this, itemId);
+				}
+				if (!this.actor.canAct) throw this.broken();
+
+				const properties = this.getGear(itemId);
+				const data = {
+					title: properties.gear.name,
+					...properties,
+				};
+				const options = {
+					...this.getRollOptions(
+						data.skill?.name,
+						data.attribute?.name,
+						data.gear.itemId,
+					),
+				};
+
+				const damageTypeOptions = computeDamageTypeOptions(this.actor, itemId);
+				options.isAttack = true;
+				options.damage = Number(
+					item.system?.damage ??
+						item.itemProperties?.damage ??
+						properties?.gear?.damage ??
+						0,
+				);
+				options.damageType = getDefaultWeaponDamageType(item);
+				options.damageTypeOptions = damageTypeOptions;
+				options.template = `modules/${MODULE_ID}/templates/dialog.hbs`;
+
+				return game.fbl.roll(data, {
+					...options,
+					gears: this.getGears(),
+				});
+			};
+		}
+
+		sheetClass.prototype.__fblEnhancementsAttackPatched = true;
+	}
 }
 
 function patchItemDocument() {
@@ -609,22 +731,10 @@ function patchItemDocument() {
 			const data = originalGetRollData.apply(this, args) || {};
 			const current = String(
 				data.damageType || this.system?.damageType || "other",
-			)
-				.toLowerCase()
-				.trim();
-			const allowed = new Set([
-				"stab",
-				"slash",
-				"blunt",
-				"fire",
-				"empathy",
-				"endurance",
-				"fear",
-				"other",
-			]);
+			);
 			return {
 				...data,
-				damageType: allowed.has(current) ? current : "other",
+				damageType: normalizeDamageType(current),
 			};
 		};
 	}
@@ -633,11 +743,8 @@ function patchItemDocument() {
 }
 
 function patchMonsterAttackSheet() {
-	const classes = Object.values(CONFIG.Item?.sheetClasses || {});
-	const monsterSheetClass = classes.find((sheetClass) => {
-		const types = Object.keys(sheetClass?.types || {});
-		return types.includes("monsterAttack");
-	})?.cls;
+	const entries = Object.values(CONFIG.Item?.sheetClasses?.monsterAttack || {});
+	const monsterSheetClass = (entries.find((e) => e.default) || entries[0])?.cls || null;
 	if (!monsterSheetClass?.prototype || monsterSheetClass.prototype.__fblEnhancementsPatched)
 		return;
 
@@ -651,7 +758,7 @@ function patchMonsterAttackSheet() {
 			{ value: "fire", label: "ATTACK.FIRE" },
 			{ value: "empathy", label: "ATTACK.EMPATHY" },
 			{ value: "endurance", label: "ATTACK.ENDURANCE" },
-			{ value: "fear", label: "ATTACK.FEAR" },
+			{ value: "wits", label: "ATTACK.WITS" },
 			{ value: "other", label: "ATTACK.OTHER" },
 		];
 		return data;
@@ -661,11 +768,8 @@ function patchMonsterAttackSheet() {
 }
 
 function patchMonsterSheet() {
-	const classes = Object.values(CONFIG.Actor?.sheetClasses || {});
-	const monsterSheetClass = classes.find((sheetClass) => {
-		const types = Object.keys(sheetClass?.types || {});
-		return types.includes("monster");
-	})?.cls;
+	const entries = Object.values(CONFIG.Actor?.sheetClasses?.monster || {});
+	const monsterSheetClass = (entries.find((e) => e.default) || entries[0])?.cls || null;
 	if (!monsterSheetClass?.prototype || monsterSheetClass.prototype.__fblEnhancementsPatched)
 		return;
 
@@ -687,23 +791,11 @@ function patchMonsterSheet() {
 			const gear = attack.getRollData();
 			const rollOptions =
 				typeof this.getRollOptions === "function" ? this.getRollOptions() : {};
-			const rawDamageType = String(
+			const damageType = normalizeDamageType(
 				attack.system?.damageType || gear.damageType || "other",
-			)
-				.toLowerCase()
-				.trim();
-			const allowed = new Set([
-				"stab",
-				"slash",
-				"blunt",
-				"fire",
-				"empathy",
-				"endurance",
-				"fear",
-				"other",
-			]);
-			const damageType = allowed.has(rawDamageType) ? rawDamageType : "other";
+			);
 			const options = {
+				...rollOptions,
 				name: attack.name,
 				maxPush: rollOptions.unlimitedPush ? 10000 : "0",
 				isAttack: true,
@@ -712,7 +804,6 @@ function patchMonsterSheet() {
 				damageType,
 				gear: { ...gear, damageType },
 				attack,
-				...rollOptions,
 			};
 			const dice = attack.system?.usingStrength
 				? Number(this.actor.attributes?.strength?.value || 0)
@@ -727,7 +818,7 @@ function patchMonsterSheet() {
 }
 
 function patchItemSheetsResizable() {
-	const sheetClasses = Object.values(CONFIG.Item?.sheetClasses || {});
+	const sheetClasses = Object.values(CONFIG.Item?.sheetClasses || {}).flatMap(Object.values);
 	for (const entry of sheetClasses) {
 		const cls = entry?.cls;
 		if (!cls?.prototype) continue;
@@ -896,28 +987,6 @@ function registerChatHooks() {
 }
 
 function registerRestConfirmationHook() {
-	Hooks.on("getActorSheetHeaderButtons", (_app, buttons) => {
-		const restButton = buttons.find((button) => button.class === "rest-up");
-		if (!restButton || restButton.__fblEnhRestWrapped) return;
-
-		const originalOnClick = restButton.onclick;
-		restButton.onclick = async (event) => {
-			if (!isEnabled(SETTING_REST_CONFIRMATION))
-				return originalOnClick?.(event);
-			const confirmed = await Dialog.confirm({
-				title: l("REST_CONFIRM.TITLE"),
-				content: `<p>${l("REST_CONFIRM.CONTENT")}</p>`,
-				yes: () => true,
-				no: () => false,
-				defaultYes: false,
-			});
-			if (!confirmed) return;
-			return originalOnClick?.(event);
-		};
-		restButton.__fblEnhRestWrapped = true;
-	});
-
-	// Fallback: intercept already-rendered REST buttons directly in Actor sheets.
 	Hooks.on("renderActorSheet", (app, html) => {
 		const root = html?.[0] || html;
 		if (!root) return;
@@ -998,6 +1067,86 @@ function registerCollapseHintHook() {
 	});
 }
 
+function registerRollDialogHook() {
+	// renderFBLRollHandler fires each time the roll dialog (AppV1 FormApplication) renders.
+	// Used as the reliable fallback for: (a) dialog damage-type selector injection,
+	// (b) isAttack override for zero-damage weapons, (c) getRollOptions propagation.
+	// renderApplication fires for every AppV1 render regardless of class name mangling.
+	// The tight condition below (damageTypeOptions / isAttack) limits firing to our
+	// attack roll dialogs only — no other Application uses these options.
+	Hooks.on("renderApplication", (app, html) => {
+		if (!isEnabled(SETTING_COMBAT_AUTOMATION)) return;
+		if (!app.options.damageTypeOptions?.length && !app.options.isAttack) return;
+
+		const root = html?.[0] || html;
+		if (!root) return;
+
+		// Inject damage type <select> if not already present.
+		// Handles system template (no damageTypeOptions block) and our template's
+		// top-level scope mismatch — both leave #damageType absent after render.
+		if (app.options.damageTypeOptions?.length) {
+			const optionsDiv = root.querySelector?.(".options");
+			if (optionsDiv && !optionsDiv.querySelector("#damageType")) {
+				const currentType = app.options.damageType || "other";
+				const wrapper = document.createElement("div");
+				wrapper.className = "final-modifier";
+				const labelEl = document.createElement("label");
+				labelEl.htmlFor = "damageType";
+				labelEl.textContent = l("ROLL.DAMAGE_TYPE");
+				const selectEl = document.createElement("select");
+				selectEl.id = "damageType";
+				selectEl.name = "damageType";
+				for (const opt of app.options.damageTypeOptions) {
+					const option = document.createElement("option");
+					option.value = opt.value;
+					option.textContent = game.i18n.localize(opt.label);
+					if (opt.value === currentType) option.selected = true;
+					selectEl.appendChild(option);
+				}
+				wrapper.appendChild(labelEl);
+				wrapper.appendChild(selectEl);
+				optionsDiv.appendChild(wrapper);
+			}
+		}
+
+		// Keep app.options.damageType in sync with the selector so that the
+		// patched getRollOptions() below picks up the user's choice on submit.
+		const selectEl = root.querySelector?.("#damageType");
+		if (selectEl) {
+			selectEl.addEventListener("change", () => {
+				app.options.damageType = selectEl.value;
+			});
+		}
+
+		// Override isAttack getter on this instance.
+		// FBLRollHandler.isAttack = !!this.damage, which is false when a weapon's
+		// damage bonus is 0. getRollOptions() calls this.isAttack, so without this
+		// override roll.options.isAttack would be false and no attack UI would render.
+		if (app.options.isAttack && !app.isAttack) {
+			Object.defineProperty(app, "isAttack", {
+				get() { return true; },
+				configurable: true,
+			});
+		}
+
+		// Patch getRollOptions() on this instance to forward damageType (and
+		// damageTypeOptions) into roll.options. The system's getRollOptions()
+		// explicitly constructs a fixed-key object and omits both fields.
+		if (!app._fblEnhRollOptionsPatched) {
+			const origGetRollOptions = app.getRollOptions.bind(app);
+			app.getRollOptions = function fblEnhGetRollOptions() {
+				const opts = origGetRollOptions();
+				if (this.options.damageType)
+					opts.damageType = normalizeDamageType(this.options.damageType);
+				if (this.options.damageTypeOptions?.length)
+					opts.damageTypeOptions = this.options.damageTypeOptions;
+				return opts;
+			};
+			app._fblEnhRollOptionsPatched = true;
+		}
+	});
+}
+
 Hooks.once("init", () => {
 	console.log(`${MODULE_ID} | Initializing module`);
 	registerSettings();
@@ -1008,17 +1157,19 @@ Hooks.once("setup", () => {
 	game.modules.get(MODULE_ID).api = { MODULE_ID };
 });
 
-Hooks.once("ready", () => {
+Hooks.once("ready", async () => {
 	console.log(`${MODULE_ID} | Module ready`);
 	patchItemDocument();
+	patchActorSheets();
 	patchItemSheetsResizable();
 	patchMonsterAttackSheet();
 	patchMonsterSheet();
 	patchRollClass();
-	patchRollHandler();
+	patchRollApi();
 	registerSocket();
 	registerChatHooks();
 	registerRestConfirmationHook();
 	registerCollapseHintHook();
+	registerRollDialogHook();
 });
 

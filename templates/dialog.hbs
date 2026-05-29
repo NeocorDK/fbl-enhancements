@@ -57,11 +57,11 @@
 					value="{{modifier}}"
 				/>
 			</div>
-			{{#if damageTypeOptions.length}}
+			{{#if options.damageTypeOptions.length}}
 				<div class="final-modifier">
 					<label for="damageType">{{localize "FBL_ENHANCEMENTS.ROLL.DAMAGE_TYPE"}}:</label>
 					<select id="damageType" name="damageType">
-						{{selectOptions damageTypeOptions selected=damageType localize=true}}
+						{{selectOptions options.damageTypeOptions selected=options.damageType localize=true}}
 					</select>
 				</div>
 			{{/if}}

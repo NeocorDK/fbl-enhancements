@@ -1,4 +1,7 @@
 {
+    "ATTACK.FIRE": "Огонь",
+    "ATTACK.EMPATHY": "Эмпатия",
+    "ATTACK.ENDURANCE": "Выносливость",
     "FBL_ENHANCEMENTS":  {
                              "MODULE_TITLE":  "Forbidden Lands Enhancements",
                              "REST_CONFIRM":  {
