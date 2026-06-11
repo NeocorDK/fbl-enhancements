@@ -9,6 +9,8 @@ const _defenseSyncInFlight = new Set();
 const l = (key) => game.i18n.localize(`FBL_ENHANCEMENTS.${key}`);
 const isEnabled = (settingKey) => game.settings.get(MODULE_ID, settingKey);
 
+const DEFENSE_ACTION_NAMES = new Set(["dodge", "parry", "armor", "flee"]);
+
 const CANONICAL_DAMAGE_TYPES = [
 	"stab",
 	"slash",
@@ -630,7 +632,7 @@ function patchActorSheets() {
 			) {
 				const item = itemId ? this.actor?.items?.get?.(itemId) || null : null;
 				const isWeaponAttack = item?.type === "weapon" || actionName === "unarmed";
-				if (!isWeaponAttack || !game.fbl?.roll) {
+				if (DEFENSE_ACTION_NAMES.has(actionName) || !isWeaponAttack || !game.fbl?.roll) {
 					return originalRollAction.call(this, actionName, itemId);
 				}
 				if (!this.actor.canAct) throw this.broken();
@@ -891,9 +893,17 @@ function registerChatHooks() {
 		const attackButtons = htmlElement.querySelectorAll(".fbl-button.attack-action");
 		if (!attackButtons.length) return;
 
-		if (!canCurrentUserUseAttackActions(message, attackRoll)) {
+		const isGM = game.user.isGM;
+		const isTargetOwner = canCurrentUserUseAttackActions(message, attackRoll);
+
+		if (!isGM && !isTargetOwner) {
 			attackButtons.forEach((button) => button.remove());
 			return;
+		}
+
+		// apply-damage is GM-only: target-owner players can use defense buttons but not apply damage
+		if (!isGM) {
+			htmlElement.querySelectorAll('[data-action="apply-damage"]').forEach(b => b.remove());
 		}
 
 		attackButtons.forEach((button) => {
@@ -977,6 +987,23 @@ function registerChatHooks() {
 					}
 
 					await persistAttackMessageState(message, roll);
+
+					// Optimistic local update so buttons disappear immediately without
+					// waiting for the server round-trip and message re-render.
+					const buttonContainer = button.closest(".fbl-enh-attack-buttons");
+					if (buttonContainer) {
+						if (roll.options.defenseUsed) {
+							buttonContainer
+								.querySelectorAll('[data-action="defense-dodge"], [data-action="defense-parry"]')
+								.forEach(b => b.remove());
+						}
+						if (roll.options.armorUsed) {
+							buttonContainer.querySelector('[data-action="defense-armor"]')?.remove();
+						}
+						if (roll.options.attackApplied) {
+							buttonContainer.querySelectorAll(".fbl-button.attack-action").forEach(b => b.remove());
+						}
+					}
 				} catch (error) {
 					console.error(`${MODULE_ID} | Attack action failed`, error);
 					await postRollWarning("ROLL.WARNING_ACTION_FAILED");

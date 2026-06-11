@@ -3,7 +3,7 @@
     "name":  "fbl-enhancements",
     "title":  "Forbidden Lands Enhancements",
     "description":  "Optional automation and combat enhancements for Forbidden Lands.",
-    "version":  "0.3.0",
+    "version":  "0.3.1",
     "authors":  [
                     {
                         "name":  "NeocorDK"
@@ -60,7 +60,8 @@
                                            }
                                        ]
                       },
+    "socket": true,
     "url":  "https://github.com/NeocorDK/fbl-enhancements",
     "manifest":  "https://raw.githubusercontent.com/NeocorDK/fbl-enhancements/main/module.json",
-    "download":  "https://github.com/NeocorDK/fbl-enhancements/releases/download/v0.3.0/fbl-enhancements.zip"
+    "download":  "https://github.com/NeocorDK/fbl-enhancements/releases/download/v0.3.1/fbl-enhancements.zip"
 }
