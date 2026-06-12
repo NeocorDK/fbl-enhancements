@@ -393,15 +393,13 @@ async function applyAttackArmorDamage(targetActor, roll) {
 	await applyArmorFailureDamage(targetActor, armorFailure);
 }
 
-function getDefenseSourceRoll(roll) {
-	if (roll.options?.linkedDefenseType === "armor")
+function getDefenseSourceRoll(roll, defenseType) {
+	if (defenseType === "armor")
 		return {
 			success: Number(roll.successCount || 0),
 			failure: Number(roll.gearDamage || roll.baneCount || 0),
 		};
-	if (roll.options?.linkedDefenseType === "dodge")
-		return { success: Number(roll.successCount || 0), failure: 0 };
-	if (roll.options?.linkedDefenseType === "parry")
+	if (defenseType === "dodge" || defenseType === "parry")
 		return { success: Number(roll.successCount || 0), failure: 0 };
 	return null;
 }
@@ -450,10 +448,7 @@ async function syncLinkedAttackFromDefenseMessage(message) {
 		if (!attackRoll?.options?.isAttack) return;
 
 		applyAttackStateToRoll(attackMessage, attackRoll);
-		const source = getDefenseSourceRoll({
-			...defenseRoll,
-			options: { ...(defenseRoll.options || {}), linkedDefenseType: meta.defenseType },
-		});
+		const source = getDefenseSourceRoll(defenseRoll, meta.defenseType);
 		if (!source) return;
 
 		const syncState = getSyncedDefenseState(meta, source);
@@ -492,13 +487,35 @@ async function rollTargetDefense(actor, type, attackMessageId, itemId = null) {
 			attackMessageId,
 			defenseType: type,
 		});
-		await result.message?.update({ content: await result.roll.render() });
+		// Persist roll options to DB so that FBL's push mechanism (which creates a new
+		// chat message from the stored roll) carries linkedAttackMessageId forward.
+		await result.message?.update({
+			content: await result.roll.render(),
+			rolls: [result.roll.toJSON()],
+		});
 	}
 	return result;
 }
 
+async function rollMonsterArmor(actor) {
+	const armorValue = Number(actor.system?.armor?.value || 0);
+	if (!armorValue) {
+		ui.notifications.warn(game.i18n.localize("WARNING.NO_ARMOR"));
+		return null;
+	}
+	const FBLRollClass = CONFIG.Dice.rolls?.find((cls) => cls?.name === "FBLRoll");
+	if (!FBLRollClass) return null;
+	const armorName = game.i18n.localize("ITEM.TypeArmor");
+	const roll = FBLRollClass.create(`${armorValue}dg[${armorName}]`, {}, { maxPush: "0" });
+	await roll.roll();
+	const message = await roll.toMessage();
+	return { roll, message };
+}
+
 async function rollTargetArmor(actor, attackMessageId) {
-	const result = await actor.sheet.rollArmor?.();
+	const result = actor.type === "monster"
+		? await rollMonsterArmor(actor)
+		: await actor.sheet.rollArmor?.();
 	if (result?.roll) {
 		result.roll.options.linkedAttackMessageId = attackMessageId;
 		result.roll.options.linkedDefenseType = "armor";
