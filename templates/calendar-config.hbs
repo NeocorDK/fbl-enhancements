@@ -1,0 +1,64 @@
+<div class="fbl-calendar-config-body standard-form">
+	<details class="fbl-cal-section" open>
+		<summary>{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.GENERAL"}}</summary>
+		<div class="fbl-cal-section-body">
+			<div class="form-group">
+				<label for="fbl-cfg-starting-year">{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.STARTING_YEAR"}}</label>
+				<input id="fbl-cfg-starting-year" type="number" name="startingYear" value="{{startingYear}}" step="1" />
+			</div>
+
+			<div class="form-group">
+				<label for="fbl-cfg-lunar-epoch">{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.LUNAR_EPOCH"}}</label>
+				<input id="fbl-cfg-lunar-epoch" type="number" name="lunarEpochDay" value="{{lunarEpochDay}}" step="1" />
+				<p class="hint">{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.LUNAR_EPOCH_HINT"}}</p>
+			</div>
+		</div>
+	</details>
+
+	<details class="fbl-cal-section">
+		<summary>{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.PHASE_LENGTHS"}}</summary>
+		<div class="fbl-cal-section-body">
+			{{#each phases}}
+			<div class="form-group">
+				<label for="fbl-cfg-phase-{{this.index}}">{{this.label}} <span class="hint">({{this.holiday}})</span></label>
+				<input id="fbl-cfg-phase-{{this.index}}" type="number" name="phaseLengths.{{this.index}}" value="{{this.length}}" min="1" step="1" />
+			</div>
+			{{/each}}
+		</div>
+	</details>
+
+	<details class="fbl-cal-section" open>
+		<summary>{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.SET_CURRENT"}}</summary>
+		<div class="fbl-cal-section-body">
+			<p class="hint">{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.SET_CURRENT_HINT"}}</p>
+
+			<div class="form-group">
+				<label for="fbl-cfg-date-year">{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.DATE_YEAR"}}</label>
+				<input id="fbl-cfg-date-year" type="number" name="dateYear" value="{{currentYear}}" step="1" />
+			</div>
+
+			<div class="form-group">
+				<label for="fbl-cfg-date-phase">{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.DATE_PHASE"}}</label>
+				<select id="fbl-cfg-date-phase" name="datePhase">
+					{{#each phases}}
+					<option value="{{this.index}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+					{{/each}}
+				</select>
+			</div>
+
+			<div class="form-group">
+				<label for="fbl-cfg-date-day">{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.DATE_DAY"}}</label>
+				<input id="fbl-cfg-date-day" type="number" name="dateDay" value="{{currentDay}}" min="1" step="1" />
+			</div>
+
+			<div class="form-group">
+				<label for="fbl-cfg-date-quarter">{{localize "FBL_ENHANCEMENTS.CALENDAR.CONFIG.DATE_QUARTER"}}</label>
+				<select id="fbl-cfg-date-quarter" name="dateQuarter">
+					{{#each quarters}}
+					<option value="{{this.index}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+					{{/each}}
+				</select>
+			</div>
+		</div>
+	</details>
+</div>

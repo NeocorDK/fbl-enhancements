@@ -1,0 +1,384 @@
+/*
+ * Forbidden Lands Enhancements — Calendar styling.
+ * Scoped under .forbidden-lands so it inherits the system's theme variables
+ * (--color-theme-*, --font-header-sc, --font-body) and parchment/dark theming.
+ */
+
+.fbl-calendar.application .window-content {
+	padding: 0;
+}
+
+.fbl-calendar .fbl-calendar-window {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 12px 16px 16px;
+	color: var(--color-theme-text, #222020);
+	font-family: var(--font-body, sans-serif);
+}
+
+/* --- Header: year / phase / day --- */
+.fbl-calendar .fbl-cal-header {
+	text-align: center;
+	border-bottom: 2px solid #1112;
+	padding-bottom: 8px;
+	cursor: pointer;
+}
+
+.fbl-calendar .fbl-cal-header-top {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+}
+
+.fbl-calendar .fbl-cal-header-actions {
+	position: absolute;
+	right: 0;
+	top: -2px;
+	display: flex;
+	gap: 4px;
+}
+
+.fbl-calendar .fbl-cal-icon-btn {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: 1px solid #1114;
+	border-radius: 4px;
+	color: var(--color-theme-text, #222020);
+	cursor: pointer;
+}
+
+.fbl-calendar .fbl-cal-icon-btn:hover {
+	border-color: var(--color-theme-accent, #a00404);
+	color: var(--color-theme-accent, #a00404);
+}
+
+.fbl-calendar .fbl-cal-year {
+	font-family: var(--font-header-sc, serif);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	font-size: var(--font-size-14, 14px);
+	opacity: 0.85;
+}
+
+.fbl-calendar .fbl-cal-phase {
+	font-family: var(--font-header-sc, serif);
+	text-transform: uppercase;
+	font-weight: 700;
+	font-size: var(--font-size-20, 20px);
+	line-height: 1.2;
+	margin: 2px 0;
+}
+
+.fbl-calendar .fbl-cal-strong {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 1px 6px;
+	border: 1px solid var(--color-theme-accent, #a00404);
+	border-radius: 3px;
+	color: var(--color-theme-accent, #a00404);
+	font-family: var(--font-body, sans-serif);
+	font-size: var(--font-size-10, 10px);
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	vertical-align: middle;
+	text-transform: uppercase;
+}
+
+.fbl-calendar .fbl-cal-holiday {
+	font-family: var(--font-alternative, serif);
+	font-weight: 700;
+	color: var(--color-theme-accent, #a00404);
+	font-size: var(--font-size-16, 16px);
+}
+
+.fbl-calendar .fbl-cal-day {
+	font-size: var(--font-size-14, 14px);
+}
+
+.fbl-calendar .fbl-cal-day-total {
+	opacity: 0.6;
+}
+
+/* --- Moon --- */
+.fbl-calendar .fbl-cal-moon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	font-size: var(--font-size-14, 14px);
+}
+
+.fbl-calendar .fbl-cal-moon-illum {
+	opacity: 0.65;
+	font-size: var(--font-size-12, 12px);
+}
+
+/* --- Time of day --- */
+.fbl-calendar .fbl-cal-time {
+	text-align: center;
+	padding: 6px 0;
+	border-top: 1px solid #1112;
+	border-bottom: 1px solid #1112;
+}
+
+.fbl-calendar .fbl-cal-quarter {
+	font-family: var(--font-header-sc, serif);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-size: var(--font-size-16, 16px);
+}
+
+.fbl-calendar .fbl-cal-clock {
+	font-family: var(--font-header-sc, serif);
+	font-size: var(--font-size-28, 28px);
+	font-weight: 700;
+}
+
+/* --- GM controls --- */
+.fbl-calendar .fbl-cal-controls {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.fbl-calendar .fbl-cal-granularity-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 8px;
+}
+
+.fbl-calendar .fbl-cal-gran-btn {
+	min-height: 26px;
+	padding: 4px 6px;
+	font-family: var(--font-header-sc, serif);
+	font-size: calc(var(--font-size-14, 14px) * 0.8);
+	font-weight: 700;
+	text-align: center;
+	background: var(--color-theme-background, #fff);
+	color: var(--color-theme-text, #222020);
+	border: 2px solid #1114;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.fbl-calendar .fbl-cal-gran-btn:hover {
+	border-color: var(--color-theme-accent, #a00404);
+}
+
+.fbl-calendar .fbl-cal-gran-btn.active {
+	border-color: var(--color-theme-accent, #a00404);
+	background: var(--color-theme-accent, #a00404);
+	color: #fff;
+}
+
+.fbl-calendar .fbl-cal-skip {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+/* Reuse the module's existing .fbl-button look. */
+.fbl-calendar .fbl-button {
+	display: block;
+	width: 100%;
+	min-height: 29px;
+	padding: 6px 8px;
+	font-family: var(--font-header-sc, serif);
+	font-size: calc(var(--font-size-16, 16px) * 0.8);
+	font-weight: 700;
+	line-height: 1.1;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	text-align: center;
+	background: var(--color-theme-background, #fff);
+	color: var(--color-theme-text, #222020);
+	border: 2px solid #1114;
+	border-radius: 4px;
+	box-shadow: inset 0 0 0 1px #fff6;
+	cursor: pointer;
+	transition: transform 80ms ease-in-out, box-shadow 80ms ease-in-out, border-color 80ms ease-in-out;
+}
+
+.fbl-calendar .fbl-button:hover {
+	border-color: var(--color-theme-accent, #a00404);
+	box-shadow: inset 0 0 0 1px #fff8, 0 0 3px #0003;
+}
+
+.fbl-calendar .fbl-button:active {
+	transform: scale(0.97);
+}
+
+/* --- Setup form --- */
+.fbl-calendar-config .fbl-calendar-config-body {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 8px 4px;
+}
+
+.fbl-calendar-config fieldset {
+	border: 1px solid #1113;
+	border-radius: 4px;
+	padding: 8px 10px;
+}
+
+.fbl-calendar-config legend {
+	font-family: var(--font-header-sc, serif);
+	text-transform: uppercase;
+	font-weight: 700;
+	padding: 0 6px;
+}
+
+.fbl-calendar-config .hint {
+	font-size: var(--font-size-12, 12px);
+	opacity: 0.7;
+	margin: 2px 0 0;
+}
+
+/* --- Collapsible setup sections --- */
+.fbl-calendar-config .fbl-cal-section {
+	border: 1px solid #1113;
+	border-radius: 4px;
+	padding: 0;
+}
+
+.fbl-calendar-config .fbl-cal-section > summary {
+	cursor: pointer;
+	font-family: var(--font-header-sc, serif);
+	text-transform: uppercase;
+	font-weight: 700;
+	padding: 8px 10px;
+	list-style: none;
+}
+
+.fbl-calendar-config .fbl-cal-section > summary::-webkit-details-marker {
+	display: none;
+}
+
+.fbl-calendar-config .fbl-cal-section > summary::before {
+	content: "\f078";
+	font-family: "Font Awesome 6 Free";
+	font-weight: 900;
+	margin-right: 6px;
+	font-size: 0.8em;
+	display: inline-block;
+	transition: transform 80ms ease-in-out;
+}
+
+.fbl-calendar-config .fbl-cal-section[open] > summary::before {
+	transform: rotate(180deg);
+}
+
+.fbl-calendar-config .fbl-cal-section-body {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 0 10px 10px;
+}
+
+/* --- Setup window: scrollable body, footer always visible --- */
+.fbl-calendar-config.application .window-content {
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	overflow: hidden;
+}
+
+.fbl-calendar-config .fbl-calendar-config-body {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	min-height: 0;
+}
+
+.fbl-calendar-config footer {
+	flex: 0 0 auto;
+}
+
+/* --- Day grid (expanded view) --- */
+.fbl-calendar .fbl-cal-grid-wrap {
+	border-top: 1px solid #1112;
+	padding-top: 8px;
+}
+
+.fbl-calendar .fbl-cal-grid {
+	display: grid;
+	grid-template-columns: repeat(8, 1fr);
+	gap: 4px;
+}
+
+.fbl-calendar .fbl-cal-grid-day {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	aspect-ratio: 1;
+	border: 1px solid #1112;
+	border-radius: 3px;
+	font-size: var(--font-size-12, 12px);
+}
+
+.fbl-calendar .fbl-cal-grid-day.current {
+	border-color: var(--color-theme-accent, #a00404);
+	background: rgba(160, 4, 4, 0.18);
+	font-weight: 700;
+}
+
+.fbl-calendar .fbl-cal-grid-day.holiday i {
+	position: absolute;
+	top: 2px;
+	font-size: 8px;
+	color: var(--color-theme-accent, #a00404);
+}
+
+/* --- Close button: force an X glyph regardless of theme/icon-font quirks --- */
+.fbl-calendar .window-header .header-control[data-action="close"],
+.fbl-calendar-config .window-header .header-control[data-action="close"] {
+	font-family: "Font Awesome 6 Free", sans-serif;
+	font-weight: 900;
+}
+
+.fbl-calendar .window-header .header-control[data-action="close"]::before,
+.fbl-calendar-config .window-header .header-control[data-action="close"]::before {
+	content: "\f00d";
+}
+
+/* --- Dark mode: brighten text/buttons for readability --- */
+body.theme-dark .fbl-calendar .fbl-calendar-window,
+body.theme-dark .fbl-calendar-config .fbl-calendar-config-body {
+	color: #f0ede2;
+}
+
+body.theme-dark .fbl-calendar .fbl-cal-icon-btn {
+	color: #f0ede2;
+	border-color: #ffffff44;
+}
+
+body.theme-dark .fbl-calendar .fbl-button,
+body.theme-dark .fbl-calendar .fbl-cal-gran-btn {
+	background: #2a2622;
+	color: #f0ede2;
+	border-color: #ffffff44;
+}
+
+body.theme-dark .fbl-calendar .fbl-cal-gran-btn.active {
+	background: var(--color-theme-accent, #a00404);
+	color: #fff;
+}
+
+body.theme-dark .fbl-calendar .fbl-cal-grid-day {
+	border-color: #ffffff33;
+}
+
+body.theme-dark .fbl-calendar-config .fbl-cal-section {
+	border-color: #ffffff33;
+}
+
+body.theme-dark .fbl-calendar-config .hint {
+	color: #cfcdc2;
+}

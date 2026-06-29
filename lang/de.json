@@ -31,6 +31,91 @@
     },
     "COLLAPSE_HINT": {
       "LABEL": "Doppelklick auf diesen Bereich zum Aufklappen"
+    },
+    "CALENDAR": {
+      "TITLE": "Calendar",
+      "OPEN": "Open calendar",
+      "YEAR": "Year",
+      "DAY": "Day",
+      "STRONG_PHASE": "Strong phase",
+      "STRONG_PHASE_HINT": "This phase contains two full moons and strongly influences the events of the year.",
+      "SKIP_FORWARD": "Forward",
+      "SKIP_BACK": "Back",
+      "SET_DATE": "Set date…",
+      "TOGGLE_SIZE_HINT": "Toggle compact / full view",
+      "SETTINGS": {
+        "ENABLED": {
+          "NAME": "Enable calendar",
+          "HINT": "Enable the built-in Forbidden Lands calendar and its scene-control button."
+        },
+        "VISIBLE": {
+          "NAME": "Calendar visible to players",
+          "HINT": "Allow players to open and view the calendar. The GM can always change the time; players only view it."
+        }
+      },
+      "PHASES": {
+        "WINTER_WANE": "Winterwane",
+        "SPRING_RISE": "Springrise",
+        "SPRING_FALL": "Springwane",
+        "SUMMER_RISE": "Summerrise",
+        "SUMMER_FALL": "Summerwane",
+        "AUTUMN_RISE": "Autumnrise",
+        "AUTUMN_FALL": "Autumnwane",
+        "WINTER_RISE": "Winterrise"
+      },
+      "HOLIDAYS": {
+        "MIDWINTER": "Midwinter Day",
+        "AWAKENING": "Day of Awakening",
+        "SPRING_TURN": "Spring Turn",
+        "GREENING": "Day of Greening",
+        "MIDSUMMER": "Midsummer Day",
+        "HARVEST": "Harvest Day",
+        "AUTUMN_TURN": "Autumn Turn",
+        "DAY_OF_DEAD": "Day of the Dead"
+      },
+      "QUARTERS": {
+        "MORNING": "Morning",
+        "DAY": "Daytime",
+        "EVENING": "Evening",
+        "NIGHT": "Night"
+      },
+      "MOON": {
+        "NEW": "New Moon",
+        "WAXING_CRESCENT": "Waxing Crescent",
+        "FIRST_QUARTER": "First Quarter",
+        "WAXING_GIBBOUS": "Waxing Gibbous",
+        "FULL": "Full Moon",
+        "WANING_GIBBOUS": "Waning Gibbous",
+        "LAST_QUARTER": "Last Quarter",
+        "WANING_CRESCENT": "Waning Crescent"
+      },
+      "GRANULARITY": {
+        "LABEL": "Step",
+        "DAY_QUARTER": "Quarter of day (6h)",
+        "DAY_QUARTER_SHORT": "6H",
+        "QUARTER": "Quarter of quarter (1.5h)",
+        "QUARTER_SHORT": "1.5H",
+        "HOUR_QUARTER": "Quarter of hour (15m)",
+        "HOUR_QUARTER_SHORT": "15M"
+      },
+      "CONFIG": {
+        "MENU_NAME": "Calendar Setup",
+        "MENU_HINT": "Configure the calendar phases, lunar cycle, and set the current date and time.",
+        "MENU_LABEL": "Configure Calendar",
+        "TITLE": "Calendar Setup",
+        "GENERAL": "General",
+        "STARTING_YEAR": "Starting year",
+        "LUNAR_EPOCH": "Lunar epoch (day index of a new moon)",
+        "LUNAR_EPOCH_HINT": "Day index that is a new moon. Adjust to align the moon phases with your campaign.",
+        "PHASE_LENGTHS": "Phase lengths (days)",
+        "SET_CURRENT": "Set current date & time",
+        "SET_CURRENT_HINT": "These fields reflect the calendar's current date and time. Change them and press Save to update the calendar.",
+        "DATE_YEAR": "Year",
+        "DATE_PHASE": "Phase",
+        "DATE_DAY": "Day of phase",
+        "DATE_QUARTER": "Time of day",
+        "SAVE": "Save"
+      }
     }
   }
 }

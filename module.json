@@ -15,10 +15,12 @@
                           "maximum":  "13"
                       },
     "esmodules":  [
-                      "scripts/main.js"
+                      "scripts/main.js",
+                      "scripts/calendar.js"
                   ],
     "styles":  [
-                   "styles/fbl-enhancements.css"
+                   "styles/fbl-enhancements.css",
+                   "styles/fbl-calendar.css"
                ],
     "languages":  [
                       {

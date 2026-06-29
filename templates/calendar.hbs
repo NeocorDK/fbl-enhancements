@@ -1,0 +1,84 @@
+<div class="fbl-calendar-window">
+	<div class="fbl-cal-header">
+		<div class="fbl-cal-header-top">
+			<div class="fbl-cal-year">{{localize "FBL_ENHANCEMENTS.CALENDAR.YEAR"}} {{year}}</div>
+			<div class="fbl-cal-header-actions">
+				<button type="button" class="fbl-cal-icon-btn" data-action="toggleSize" data-tooltip="{{localize 'FBL_ENHANCEMENTS.CALENDAR.TOGGLE_SIZE_HINT'}}">
+					<i class="fas {{#if compact}}fa-expand{{else}}fa-compress{{/if}}"></i>
+				</button>
+				{{#if isGM}}
+				<button type="button" class="fbl-cal-icon-btn" data-action="openConfig" data-tooltip="{{localize 'FBL_ENHANCEMENTS.CALENDAR.SET_DATE'}}">
+					<i class="fas fa-gear"></i>
+				</button>
+				{{/if}}
+			</div>
+		</div>
+		<div class="fbl-cal-phase">
+			{{phaseName}}
+			{{#if isStrong}}
+			<span class="fbl-cal-strong" data-tooltip="{{localize 'FBL_ENHANCEMENTS.CALENDAR.STRONG_PHASE_HINT'}}">
+				<i class="fas fa-moon"></i> {{localize "FBL_ENHANCEMENTS.CALENDAR.STRONG_PHASE"}}
+			</span>
+			{{/if}}
+		</div>
+		{{#if isHoliday}}
+		<div class="fbl-cal-holiday"><i class="fas fa-star"></i> {{holidayName}}</div>
+		{{else}}
+		<div class="fbl-cal-day">
+			{{localize "FBL_ENHANCEMENTS.CALENDAR.DAY"}} {{dayInPhase}}
+			<span class="fbl-cal-day-total">/ {{phaseLength}}</span>
+		</div>
+		{{/if}}
+	</div>
+
+	<section class="fbl-cal-moon">
+		<i class="fas fa-moon"></i>
+		<span class="fbl-cal-moon-label">{{moonLabel}}</span>
+		<span class="fbl-cal-moon-illum">{{moonIllum}}%</span>
+	</section>
+
+	<section class="fbl-cal-time">
+		<div class="fbl-cal-quarter">{{dayQuarterLabel}}</div>
+		<div class="fbl-cal-clock">{{clock}}</div>
+	</section>
+
+	{{#unless compact}}
+	<section class="fbl-cal-grid-wrap">
+		<div class="fbl-cal-grid">
+			{{#each days}}
+			<div
+				class="fbl-cal-grid-day {{#if this.isCurrent}}current{{/if}} {{#if this.isHoliday}}holiday{{/if}}"
+				{{#if this.holidayName}}data-tooltip="{{this.holidayName}}"{{/if}}
+			>
+				{{#if this.isHoliday}}<i class="fas fa-star"></i>{{/if}}
+				{{this.day}}
+			</div>
+			{{/each}}
+		</div>
+	</section>
+	{{/unless}}
+
+	{{#if isGM}}
+	<section class="fbl-cal-controls">
+		<div class="fbl-cal-granularity-row">
+			{{#each granularityOptions}}
+			<button
+				type="button"
+				class="fbl-cal-gran-btn {{#if this.selected}}active{{/if}}"
+				data-action="setGranularity"
+				data-value="{{this.value}}"
+				data-tooltip="{{this.label}}"
+			>{{this.shortLabel}}</button>
+			{{/each}}
+		</div>
+		<div class="fbl-cal-skip">
+			<button type="button" class="fbl-button" data-action="skipBack">
+				<i class="fas fa-backward"></i> {{localize "FBL_ENHANCEMENTS.CALENDAR.SKIP_BACK"}}
+			</button>
+			<button type="button" class="fbl-button" data-action="skipForward">
+				{{localize "FBL_ENHANCEMENTS.CALENDAR.SKIP_FORWARD"}} <i class="fas fa-forward"></i>
+			</button>
+		</div>
+	</section>
+	{{/if}}
+</div>

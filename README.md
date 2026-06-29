@@ -68,9 +68,33 @@ Monsters are excluded from armor item degradation.
 - Ranged attacks cannot be parried unless the defender has an equipped shield.
 - Parry requires an equipped melee weapon with the `parrying` feature.
 
+### 9. Built-in Forbidden Lands calendar
+A calendar that models the in-world human calendar and tracks the passage of time. It is the
+foundation for future time-based features.
+
+- **Year structure:** a 365-day year of 8 phases (45–46 days each). Each phase opens with a named
+  holiday day: Winter Wane (Midwinter Day), Spring Rise (Day of Awakening), Spring Fall (Spring Turn),
+  Summer Rise (Day of Greening), Summer Fall (Midsummer Day), Autumn Rise (Harvest Day),
+  Autumn Fall (Autumn Turn), Winter Rise (Day of the Dead).
+- **Moon phases:** the moon follows the real synodic cycle. A phase that contains two full moons is
+  flagged as a **strong phase**, matching the lore that such phases strongly influence the year.
+- **Time of day:** the day is divided into quarters — Morning, Daytime, Evening, Night (6h each),
+  each split into quarter-of-quarters (1.5h), each hour into quarter-hours (15 min).
+- **Time controls (GM only):** a granularity selector (quarter of day / quarter of quarter / quarter
+  of hour) and forward / back buttons advance the world time by the selected step. Players can open
+  and view the calendar but cannot change the time.
+- **Setup:** the GM can configure phase lengths, the lunar cycle, and the starting year, and set the
+  current date and time, from **Calendar Setup** in the module settings.
+- **Access:** open the calendar with the calendar button in the scene controls (Token tools).
+- Time is stored in Foundry's core world time, so all connected clients stay in sync automatically.
+
 ## Module settings
 The module adds world settings (checkboxes):
 - `Combat automation in chat`
+- `Rest confirmation dialog`
+- `Enable calendar`
+- `Calendar visible to players`
+- `Calendar Setup` (menu) — configure phases, lunar cycle, starting year, and set the current date/time
 
 ## How it works (technical overview)
 - Uses runtime patches/hooks only (no direct modifications to base Forbidden Lands system files).
@@ -82,7 +106,12 @@ The module adds world settings (checkboxes):
 ## Project structure
 - `module.json` - Foundry module manifest
 - `scripts/main.js` - module runtime patches, hooks, automation logic
+- `scripts/calendar.js` - built-in calendar: date/moon engine, calendar window, setup form
 - `templates/roll.hbs` - custom roll chat card template
 - `templates/dialog.hbs` - custom roll dialog template (with damage type selection)
+- `templates/calendar.hbs`, `templates/calendar-config.hbs` - calendar window and setup form
 - `styles/fbl-enhancements.css` - chat card/button styling
-- `lang/en.json`, `lang/ru.json` - localization files
+- `styles/fbl-calendar.css` - calendar styling (Forbidden Lands theme)
+- `lang/*.json` - localization files (en, ru, es, de, pt-BR). The calendar is fully translatable
+  through these files — adding a language needs only a new JSON file and a `languages` entry in
+  `module.json`, with no code changes.
