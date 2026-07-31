@@ -13,7 +13,15 @@
       "REST_CONFIRMATION": {
         "NAME": "Diálogo de confirmación de descanso",
         "HINT": "Muestra una ventana de confirmación antes de ejecutar la acción Descansar en las hojas de personaje."
+      },
+      "INJURY_HEALING": {
+        "NAME": "Cuenta atrás de curación de heridas",
+        "HINT": "Reduce automáticamente el tiempo de curación de cada herida crítica a medida que pasan los días de juego en el calendario, eliminando la herida y anunciando la recuperación al sanar."
       }
+    },
+    "INJURY": {
+      "DAYS": "{n} días",
+      "HEALED": "{actor} se ha recuperado de {injury}."
     },
     "ROLL": {
       "DAMAGE_TYPE": "Tipo de daño",

@@ -13,7 +13,15 @@
       "REST_CONFIRMATION": {
         "NAME": "Bestätigungsdialog für Rast",
         "HINT": "Zeigt vor der Aktion Rasten auf Charakterbögen eine Bestätigung an."
+      },
+      "INJURY_HEALING": {
+        "NAME": "Countdown der Verletzungsheilung",
+        "HINT": "Zählt die Heilungszeit jeder kritischen Verletzung automatisch herunter, während im Kalender Spieltage vergehen, entfernt die Verletzung und meldet die Genesung, sobald sie geheilt ist."
       }
+    },
+    "INJURY": {
+      "DAYS": "{n} Tage",
+      "HEALED": "{actor} hat sich von {injury} erholt."
     },
     "ROLL": {
       "DAMAGE_TYPE": "Schadensart",

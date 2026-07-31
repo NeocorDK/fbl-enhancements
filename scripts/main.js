@@ -3,6 +3,12 @@ const ATTACK_STATE_FLAG = "attackState";
 const DEFENSE_SYNC_STATE_FLAG = "linkedAttackSyncState";
 const SETTING_COMBAT_AUTOMATION = "combatAutomation";
 const SETTING_REST_CONFIRMATION = "restConfirmation";
+const SETTING_INJURY_HEALING = "injuryHealingAutomation";
+
+// Module flag namespace for critical-injury healing countdown state.
+const HEAL_DAYS_REMAINING_FLAG = "healDaysRemaining";
+const HEAL_DAYS_TOTAL_FLAG = "healDaysTotal";
+const HEAL_SOURCE_FLAG = "healSource";
 
 const _defenseSyncInFlight = new Set();
 
@@ -101,6 +107,15 @@ function registerSettings() {
 		type: Boolean,
 		default: true,
 	});
+
+	game.settings.register(MODULE_ID, SETTING_INJURY_HEALING, {
+		name: "FBL_ENHANCEMENTS.SETTINGS.INJURY_HEALING.NAME",
+		hint: "FBL_ENHANCEMENTS.SETTINGS.INJURY_HEALING.HINT",
+		scope: "world",
+		config: true,
+		type: Boolean,
+		default: true,
+	});
 }
 
 function registerHandlebarsHelpers() {
@@ -139,6 +154,212 @@ function isActiveGM() {
 	if (!game.user?.isGM) return false;
 	const activeGM = game.users?.activeGM;
 	return !!activeGM && activeGM.id === game.user.id;
+}
+
+/* -------------------------------------------- */
+/*  Critical-injury healing countdown            */
+/* -------------------------------------------- */
+
+// The FBL system stores criticalInjury.system.healingTime as a free-text string
+// (e.g. "1d6 days", "2 days", "-", "Permanent") and never decrements it. We parse
+// it once on item creation into a numeric module flag and tick it down each in-game
+// day via the calendar's "fbl-enhancements.dayChanged" hook.
+
+// Parse a free-text healing-time string into a concrete positive integer day count.
+// Rolls any unresolved dice token (the system never does). Returns null when there is
+// no numeric/dice component (empty, "-", "Permanent"/localized permanent, etc.), so
+// such injuries are left entirely untouched.
+async function parseHealingDays(str) {
+	if (typeof str !== "string") return null;
+	const s = str.trim().toLowerCase();
+	if (!s || s === "-" || s === "—") return null;
+
+	let days = null;
+	const diceMatch = s.match(/(\d+)\s*d\s*(\d+)/);
+	if (diceMatch) {
+		try {
+			const roll = await new Roll(`${diceMatch[1]}d${diceMatch[2]}`).evaluate();
+			days = Number(roll.total);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | parseHealingDays: failed to roll "${s}"`, err);
+			return null;
+		}
+	} else {
+		const numMatch = s.match(/\d+/);
+		if (!numMatch) return null;
+		days = Number(numMatch[0]);
+	}
+
+	if (!Number.isFinite(days)) return null;
+	// Best-effort unit detection: key off the numeric token, but scale weeks up.
+	if (/week|недел/.test(s)) days *= 7;
+	days = Math.round(days);
+	return days > 0 ? days : null;
+}
+
+// Format a remaining-day count for the visible healingTime field.
+function formatHealingDays(days) {
+	return l("INJURY.DAYS").replace("{n}", String(days));
+}
+
+// True for a criticalInjury item embedded on a player character that we should track.
+function isTrackableInjury(item) {
+	return (
+		item?.type === "criticalInjury" &&
+		item.actor?.type === "character" &&
+		!!item.actor?.isOwner
+	);
+}
+
+// Parse-once: compute the day count for a freshly-added injury, store our flags, and
+// rewrite the visible healingTime to a concrete "N days" counter. Idempotent — skips
+// items that already carry our flag. Runs only on the active GM's client.
+async function initInjuryHealing(item) {
+	if (!isTrackableInjury(item)) return;
+	if (item.getFlag(MODULE_ID, HEAL_DAYS_REMAINING_FLAG) != null) return;
+
+	const source = item.system?.healingTime ?? "";
+	const days = await parseHealingDays(source);
+	if (days == null) return;
+
+	try {
+		await item.update({
+			[`flags.${MODULE_ID}.${HEAL_DAYS_REMAINING_FLAG}`]: days,
+			[`flags.${MODULE_ID}.${HEAL_DAYS_TOTAL_FLAG}`]: days,
+			[`flags.${MODULE_ID}.${HEAL_SOURCE_FLAG}`]: source,
+			"system.healingTime": formatHealingDays(days),
+		});
+	} catch (err) {
+		console.warn(`${MODULE_ID} | initInjuryHealing: update failed for "${item.name}"`, err);
+	}
+}
+
+// Scan all owned player characters for criticalInjury items that predate this feature
+// (no flag yet) and initialize their countdown. Active GM only.
+async function backfillInjuryHealing() {
+	if (!isActiveGM()) return;
+	if (!isEnabled(SETTING_INJURY_HEALING)) return;
+	for (const actor of game.actors?.contents ?? []) {
+		if (actor.type !== "character") continue;
+		for (const item of actor.items ?? []) {
+			if (item.type !== "criticalInjury") continue;
+			if (item.getFlag(MODULE_ID, HEAL_DAYS_REMAINING_FLAG) != null) continue;
+			await initInjuryHealing(item);
+		}
+	}
+}
+
+// Advance every tracked injury by the number of elapsed in-game days. When the count
+// reaches zero the injury is deleted and a public recovery message is posted.
+async function advanceInjuryHealing(elapsedDays) {
+	const step = Number(elapsedDays) || 0;
+	// Ignore non-advances and calendar rewinds — recovery must not run backwards.
+	if (step <= 0) return;
+
+	for (const actor of game.actors?.contents ?? []) {
+		if (actor.type !== "character") continue;
+
+		const toDelete = [];
+		for (const item of actor.items ?? []) {
+			if (item.type !== "criticalInjury") continue;
+			const remaining = item.getFlag(MODULE_ID, HEAL_DAYS_REMAINING_FLAG);
+			if (remaining == null) continue;
+
+			const next = Number(remaining) - step;
+			if (next > 0) {
+				try {
+					await item.update({
+						[`flags.${MODULE_ID}.${HEAL_DAYS_REMAINING_FLAG}`]: next,
+						"system.healingTime": formatHealingDays(next),
+					});
+				} catch (err) {
+					console.warn(`${MODULE_ID} | advanceInjuryHealing: update failed for "${item.name}"`, err);
+				}
+			} else {
+				toDelete.push(item);
+			}
+		}
+
+		if (!toDelete.length) continue;
+		try {
+			await actor.deleteEmbeddedDocuments(
+				"Item",
+				toDelete.map((i) => i.id),
+			);
+		} catch (err) {
+			console.warn(`${MODULE_ID} | advanceInjuryHealing: delete failed for "${actor.name}"`, err);
+			continue;
+		}
+		for (const item of toDelete) {
+			const content = l("INJURY.HEALED")
+				.replace("{actor}", actor.name)
+				.replace("{injury}", item.name);
+			await ChatMessage.create({ content, speaker: { alias: actor.name } });
+		}
+	}
+}
+
+// Reconcile a manual edit of the visible healingTime field back into our flag. This is
+// what lets house rules like "an ally with Healing halves the remaining time" work: the
+// GM/player edits the "N days" field on the injury sheet, and the countdown follows.
+// No feedback loop: our own writes keep flag and text in sync, so when they already agree
+// this is a no-op, and a flag-only correction carries no healingTime change to re-trigger it.
+async function reconcileInjuryHealing(item) {
+	const current = String(item.system?.healingTime ?? "");
+	const days = await parseHealingDays(current);
+	const remaining = item.getFlag(MODULE_ID, HEAL_DAYS_REMAINING_FLAG);
+
+	// Edited to a non-numeric value ("-", "Permanent", empty): stop tracking it.
+	if (days == null) {
+		if (remaining != null) {
+			try {
+				await item.unsetFlag(MODULE_ID, HEAL_DAYS_REMAINING_FLAG);
+			} catch (err) {
+				console.warn(`${MODULE_ID} | reconcileInjuryHealing: unset failed for "${item.name}"`, err);
+			}
+		}
+		return;
+	}
+
+	if (Number(remaining) === days) return; // already in sync — our own write, skip
+
+	const update = { [`flags.${MODULE_ID}.${HEAL_DAYS_REMAINING_FLAG}`]: days };
+	// If the user typed a dice/loose expression, normalize the field to the rolled "N days".
+	if (formatHealingDays(days) !== current.trim())
+		update["system.healingTime"] = formatHealingDays(days);
+	try {
+		await item.update(update);
+	} catch (err) {
+		console.warn(`${MODULE_ID} | reconcileInjuryHealing: update failed for "${item.name}"`, err);
+	}
+}
+
+// Register the injury-healing automation: parse-once on add, reconcile manual edits,
+// backfill legacy injuries, and tick down on the calendar's day-boundary hook. All
+// mutations run on the active GM.
+function registerInjuryHealingHook() {
+	Hooks.on("createItem", (item) => {
+		if (!isEnabled(SETTING_INJURY_HEALING)) return;
+		if (!isActiveGM()) return;
+		void initInjuryHealing(item);
+	});
+
+	Hooks.on("updateItem", (item, changes) => {
+		if (!isEnabled(SETTING_INJURY_HEALING)) return;
+		if (!isActiveGM()) return;
+		// Only react to edits of the visible healing-time field on a tracked injury.
+		if (changes?.system?.healingTime === undefined) return;
+		if (!isTrackableInjury(item)) return;
+		void reconcileInjuryHealing(item);
+	});
+
+	Hooks.on("fbl-enhancements.dayChanged", ({ elapsedDays } = {}) => {
+		if (!isEnabled(SETTING_INJURY_HEALING)) return;
+		if (!isActiveGM()) return;
+		void advanceInjuryHealing(elapsedDays);
+	});
+
+	void backfillInjuryHealing();
 }
 
 async function refreshAttackMessage(message, roll) {
@@ -1215,5 +1436,6 @@ Hooks.once("ready", async () => {
 	registerRestConfirmationHook();
 	registerCollapseHintHook();
 	registerRollDialogHook();
+	registerInjuryHealingHook();
 });
 

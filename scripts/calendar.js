@@ -541,8 +541,26 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
 	ui.controls?.render();
 
-	Hooks.on("updateWorldTime", () => {
+	Hooks.on("updateWorldTime", (worldTime, dt) => {
 		if (calendarApp?.rendered) calendarApp.render();
+
+		// Detect in-game day boundaries and broadcast a custom hook so other
+		// features (in main.js or elsewhere) can drive day-based automation
+		// without importing calendar internals. Fires on every client — the
+		// dt arg is the just-applied delta; worldTime is the new value.
+		const delta = Number(dt) || 0;
+		const prevDayIndex = worldTimeToDate(worldTime - delta).dayIndex;
+		const newDayIndex = worldTimeToDate(worldTime).dayIndex;
+		if (newDayIndex !== prevDayIndex) {
+			// elapsedDays is signed: negative when the calendar is rewound.
+			Hooks.callAll("fbl-enhancements.dayChanged", {
+				worldTime,
+				dt: delta,
+				prevDayIndex,
+				newDayIndex,
+				elapsedDays: newDayIndex - prevDayIndex,
+			});
+		}
 	});
 
 	// Expose the date engine for future features without clobbering main.js's api.

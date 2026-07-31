@@ -88,10 +88,29 @@ foundation for future time-based features.
 - **Access:** open the calendar with the calendar button in the scene controls (Token tools).
 - Time is stored in Foundry's core world time, so all connected clients stay in sync automatically.
 
+### 10. Automatic critical-injury healing
+Critical injuries no longer have to be tracked by hand — the module counts their healing time down
+as in-game days pass on the calendar.
+
+- **On add:** when a critical injury is dropped onto a player character, its free-text *Healing Time*
+  (e.g. `1d6 days`, `2 days`) is read once. Any dice are rolled to a concrete number and the field is
+  rewritten to a plain `N days` counter.
+- **Each new day:** every tracked injury's remaining days drop by the number of in-game days that
+  elapsed. Advancing several days at once (travel, a rest, a date correction) is handled correctly.
+- **On recovery:** when the counter reaches zero the injury is removed from the sheet and a public
+  chat message announces that the character has recovered.
+- **Manual adjustments are respected:** editing the healing-time field on the injury (for example
+  when an ally uses the Healing skill to halve the remaining time) re-syncs the countdown to the
+  value you enter. Setting it to a non-numeric value (`-`, `Permanent`) stops the automatic countdown.
+- Injuries whose healing time has no number (`-`, `Permanent`, empty) are left untouched.
+- All changes are made by the active GM only; rewinding the calendar never re-heals or resurrects an
+  injury. Injuries that already existed before this feature was installed are initialized on world load.
+
 ## Module settings
 The module adds world settings (checkboxes):
 - `Combat automation in chat`
 - `Rest confirmation dialog`
+- `Critical injury healing countdown`
 - `Enable calendar`
 - `Calendar visible to players`
 - `Calendar Setup` (menu) — configure phases, lunar cycle, starting year, and set the current date/time

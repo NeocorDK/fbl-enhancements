@@ -13,7 +13,15 @@
       "REST_CONFIRMATION": {
         "NAME": "Diálogo de confirmação de descanso",
         "HINT": "Mostra uma confirmação antes de executar a ação Descansar nas fichas de personagem."
+      },
+      "INJURY_HEALING": {
+        "NAME": "Contagem regressiva de cura de ferimentos",
+        "HINT": "Reduz automaticamente o tempo de cura de cada ferimento crítico conforme os dias de jogo passam no calendário, removendo o ferimento e anunciando a recuperação quando ele sara."
       }
+    },
+    "INJURY": {
+      "DAYS": "{n} dias",
+      "HEALED": "{actor} se recuperou de {injury}."
     },
     "ROLL": {
       "DAMAGE_TYPE": "Tipo de dano",

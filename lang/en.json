@@ -16,7 +16,15 @@
       "REST_CONFIRMATION": {
         "NAME": "Rest confirmation dialog",
         "HINT": "Show a confirmation popup before executing the Rest action on character sheets."
+      },
+      "INJURY_HEALING": {
+        "NAME": "Critical injury healing countdown",
+        "HINT": "Automatically count down each critical injury's healing time as in-game days pass on the calendar, removing the injury and announcing recovery when it heals."
       }
+    },
+    "INJURY": {
+      "DAYS": "{n} days",
+      "HEALED": "{actor} has recovered from {injury}."
     },
     "ROLL": {
       "DAMAGE_TYPE": "Damage type",
