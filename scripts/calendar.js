@@ -541,21 +541,28 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
 	ui.controls?.render();
 
-	Hooks.on("updateWorldTime", (worldTime, dt) => {
+	// Track the previous worldTime ourselves rather than trusting the hook's `dt`
+	// argument: across Foundry builds the second callback arg is not reliably the
+	// numeric delta, and a bad delta would collapse the day-boundary diff to zero
+	// (never firing). Seeded to the current time so the first tick compares correctly.
+	let lastWorldTime = game.time.worldTime;
+
+	Hooks.on("updateWorldTime", (worldTime) => {
 		if (calendarApp?.rendered) calendarApp.render();
+
+		// Prefer the hook's new-time arg, but fall back to the authoritative core value.
+		const now = Number.isFinite(worldTime) ? worldTime : game.time.worldTime;
+		const prevDayIndex = worldTimeToDate(lastWorldTime).dayIndex;
+		const newDayIndex = worldTimeToDate(now).dayIndex;
+		lastWorldTime = now;
 
 		// Detect in-game day boundaries and broadcast a custom hook so other
 		// features (in main.js or elsewhere) can drive day-based automation
-		// without importing calendar internals. Fires on every client — the
-		// dt arg is the just-applied delta; worldTime is the new value.
-		const delta = Number(dt) || 0;
-		const prevDayIndex = worldTimeToDate(worldTime - delta).dayIndex;
-		const newDayIndex = worldTimeToDate(worldTime).dayIndex;
+		// without importing calendar internals. Fires on every client.
 		if (newDayIndex !== prevDayIndex) {
 			// elapsedDays is signed: negative when the calendar is rewound.
 			Hooks.callAll("fbl-enhancements.dayChanged", {
-				worldTime,
-				dt: delta,
+				worldTime: now,
 				prevDayIndex,
 				newDayIndex,
 				elapsedDays: newDayIndex - prevDayIndex,
