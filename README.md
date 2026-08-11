@@ -103,8 +103,11 @@ as in-game days pass on the calendar.
   when an ally uses the Healing skill to halve the remaining time) re-syncs the countdown to the
   value you enter. Setting it to a non-numeric value (`-`, `Permanent`) stops the automatic countdown.
 - Injuries whose healing time has no number (`-`, `Permanent`, empty) are left untouched.
-- All changes are made by the active GM only; rewinding the calendar never re-heals or resurrects an
-  injury. Injuries that already existed before this feature was installed are initialized on world load.
+- **Rewinding the calendar reverses the countdown:** if the GM moves time backwards, each injury's
+  remaining days go back up (capped at its original healing time). Injuries that already healed away
+  are not resurrected.
+- All changes are made by the active GM only. Injuries that already existed before this feature was
+  installed are initialized on world load.
 
 ## Module settings
 The module adds world settings (checkboxes):

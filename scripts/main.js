@@ -249,12 +249,13 @@ async function backfillInjuryHealing() {
 	}
 }
 
-// Advance every tracked injury by the number of elapsed in-game days. When the count
-// reaches zero the injury is deleted and a public recovery message is posted.
+// Advance every tracked injury by the number of elapsed in-game days. `elapsedDays` is
+// signed: positive counts the injury down (deleting + announcing recovery at zero),
+// negative (calendar rewound) counts it back up, capped at the original healing time and
+// never re-creating an injury that already healed away.
 async function advanceInjuryHealing(elapsedDays) {
 	const step = Number(elapsedDays) || 0;
-	// Ignore non-advances and calendar rewinds — recovery must not run backwards.
-	if (step <= 0) return;
+	if (step === 0) return;
 
 	for (const actor of game.actors?.contents ?? []) {
 		if (actor.type !== "character") continue;
@@ -265,7 +266,15 @@ async function advanceInjuryHealing(elapsedDays) {
 			const remaining = item.getFlag(MODULE_ID, HEAL_DAYS_REMAINING_FLAG);
 			if (remaining == null) continue;
 
-			const next = Number(remaining) - step;
+			let next = Number(remaining) - step;
+			// On rewind (step < 0) next grows; clamp to the original total so a large
+			// backward jump cannot inflate healing beyond where the injury started. Use
+			// max(total, remaining) as the ceiling so a manually-inflated counter is never
+			// shrunk by a rewind — the clamp only caps growth, never reduces.
+			const total = Number(item.getFlag(MODULE_ID, HEAL_DAYS_TOTAL_FLAG));
+			if (step < 0 && Number.isFinite(total) && total > 0)
+				next = Math.min(next, Math.max(total, Number(remaining)));
+
 			if (next > 0) {
 				try {
 					await item.update({
