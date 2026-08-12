@@ -59,8 +59,8 @@ Monster actors are excluded from trauma table rolls.
 
 ### 7. Armor side effects (gear damage)
 If armor defense roll produces banes/failures and incoming attack is still successful, armor item bonuses are reduced:
-- helmet first
-- then body armor
+- body armor first
+- then helmet
 
 Monsters are excluded from armor item degradation.
 
