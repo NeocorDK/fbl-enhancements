@@ -20,18 +20,23 @@
 			<b>{{localize "FBL_ENHANCEMENTS.MERCHANT.GOODS"}}</b>
 			{{#if isGM}}
 				<span class="hint">{{localize "FBL_ENHANCEMENTS.MERCHANT.DROP_HINT"}}</span>
-				<div class="merchant-tools">
-					<button type="button" class="fbl-button merchant-reroll"
-						title="{{localize "FBL_ENHANCEMENTS.MERCHANT.REROLL_HINT"}}">
-						{{localize "FBL_ENHANCEMENTS.MERCHANT.REROLL"}}
-					</button>
-					<button type="button" class="fbl-button merchant-clear"
-						title="{{localize "FBL_ENHANCEMENTS.MERCHANT.CLEAR_HINT"}}">
-						{{localize "FBL_ENHANCEMENTS.MERCHANT.CLEAR_ALL"}}
-					</button>
-				</div>
 			{{/if}}
 		</div>
+
+		{{!-- Own row, not squeezed in beside the drop hint: on a narrow sheet the buttons
+		      were pushed past the right edge and clipped away by the window content. --}}
+		{{#if isGM}}
+			<div class="merchant-tools">
+				<button type="button" class="fbl-button merchant-reroll"
+					title="{{localize "FBL_ENHANCEMENTS.MERCHANT.REROLL_HINT"}}">
+					{{localize "FBL_ENHANCEMENTS.MERCHANT.REROLL"}}
+				</button>
+				<button type="button" class="fbl-button merchant-clear"
+					title="{{localize "FBL_ENHANCEMENTS.MERCHANT.CLEAR_HINT"}}">
+					{{localize "FBL_ENHANCEMENTS.MERCHANT.CLEAR_ALL"}}
+				</button>
+			</div>
+		{{/if}}
 
 		<div class="item-list">
 			<div class="items">

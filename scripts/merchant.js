@@ -391,7 +391,9 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 		return foundry.utils.mergeObject(super.defaultOptions, {
 			classes: ["forbidden-lands", "sheet", "actor", "fbl-merchant"],
 			template: `modules/${MODULE_ID}/templates/merchant-sheet.hbs`,
-			width: 620,
+			// 700, not 620: five columns of localized headers plus the GM's price inputs
+			// do not fit comfortably below this.
+			width: 700,
 			height: 700,
 			resizable: true,
 			scrollY: [".merchant-goods .items"],
