@@ -2,6 +2,7 @@
   "ATTACK.FIRE": "Fire",
   "ATTACK.EMPATHY": "Empathy",
   "ATTACK.ENDURANCE": "Endurance",
+  "TYPES.Actor.fbl-enhancements.merchant": "Merchant",
   "FBL_ENHANCEMENTS": {
     "MODULE_TITLE": "Forbidden Lands Enhancements",
     "REST_CONFIRM": {
@@ -20,7 +21,66 @@
       "INJURY_HEALING": {
         "NAME": "Critical injury healing countdown",
         "HINT": "Automatically count down each critical injury's healing time as in-game days pass on the calendar, removing the injury and announcing recovery when it heals."
+      },
+      "MERCHANT_AUTOMATION": {
+        "NAME": "Merchant automation",
+        "HINT": "Roll availability and quantity when items are added to a merchant, and let players buy from the merchant sheet."
+      },
+      "MERCHANT_ANNOUNCE": {
+        "NAME": "Announce purchases in chat",
+        "HINT": "Post a public chat message whenever a character buys something from a merchant."
+      },
+      "PRICE_MIGRATION": {
+        "NAME": "Price migration",
+        "HINT": "Parse every item's Cost and Supply text into the module's structured price and rarity fields. The system's own fields are never changed.",
+        "MENU_LABEL": "Run price migration",
+        "TITLE": "Price Migration",
+        "SCOPE_WORLD": "Items in the world Items directory",
+        "SCOPE_ACTORS": "Items owned by actors",
+        "OVERWRITE": "Overwrite existing prices",
+        "OVERWRITE_HINT": "Without this, only items with no price — or whose Cost text changed since the last parse — are updated.",
+        "RUN": "Run migration",
+        "RESULT": "Price migration: {scanned} scanned, {updated} updated, {skipped} unchanged, {failed} unparsed."
       }
+    },
+    "PRICE": {
+      "LABEL": "Price",
+      "GOLD": "Gold",
+      "SILVER": "Silver",
+      "COPPER": "Copper",
+      "GOLD_SHORT": "gp",
+      "SILVER_SHORT": "sp",
+      "COPPER_SHORT": "cp",
+      "RARITY": "Rarity",
+      "RARITY_COMMON": "Common",
+      "RARITY_UNCOMMON": "Uncommon",
+      "RARITY_RARE": "Rare"
+    },
+    "MERCHANT": {
+      "SHEET": "Merchant Sheet",
+      "NAME": "Merchant",
+      "DESCRIPTION": "Description",
+      "GOODS": "Goods",
+      "ITEM": "Item",
+      "STOCK": "Stock",
+      "PRICE": "Price",
+      "BUY": "Buy",
+      "SOLD_OUT": "Sold out",
+      "EMPTY": "This merchant has nothing for sale.",
+      "DROP_HINT": "Drag items or a folder here to stock the merchant.",
+      "BUYING_AS": "Buying as",
+      "NO_BUYER": "Select a single token or assign a character to buy with.",
+      "NO_PRICE": "This item has no price set.",
+      "NOT_ENOUGH_COINS": "Not enough coins for this purchase.",
+      "OUT_OF_STOCK": "This item is out of stock.",
+      "NO_ACTIVE_GM": "No active GM — purchases cannot be processed right now.",
+      "PURCHASE_FAILED": "The purchase could not be completed.",
+      "PURCHASED": "{actor} bought {item} for {price}.",
+      "REROLL": "Supply reroll",
+      "REROLL_HINT": "Re-roll availability and quantity for everything in stock. Items that come up unavailable are removed.",
+      "CLEAR_ALL": "Clear all",
+      "CLEAR_HINT": "Remove the merchant's entire assortment.",
+      "CLEAR_CONFIRM": "Remove every item from this merchant?"
     },
     "INJURY": {
       "DAYS": "{n} days",

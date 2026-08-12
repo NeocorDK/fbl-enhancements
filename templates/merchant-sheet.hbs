@@ -1,0 +1,138 @@
+{{!--
+	Merchant sheet (AppV1 ActorSheet). Mirrors the structure and utility classes of the
+	system's own actor sheets (`header border`, `item-list`/`items`, `item-control`) so the
+	Forbidden Lands theme applies verbatim; fbl-merchant.css only fills the gaps.
+	GM sees editable stock/price cells and the delete controls; players see a storefront.
+--}}
+<form class="{{cssClass}}" autocomplete="off">
+	<div class="header border">
+		<div class="avatar">
+			<img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+		</div>
+		<div class="header-stats">
+			<label>{{localize "FBL_ENHANCEMENTS.MERCHANT.NAME"}}</label>
+			<input name="name" type="text" value="{{actor.name}}" />
+		</div>
+	</div>
+
+	<section class="merchant-goods">
+		<div class="merchant-goods-header">
+			<b>{{localize "FBL_ENHANCEMENTS.MERCHANT.GOODS"}}</b>
+			{{#if isGM}}
+				<span class="hint">{{localize "FBL_ENHANCEMENTS.MERCHANT.DROP_HINT"}}</span>
+				<div class="merchant-tools">
+					<button type="button" class="fbl-button merchant-reroll"
+						title="{{localize "FBL_ENHANCEMENTS.MERCHANT.REROLL_HINT"}}">
+						{{localize "FBL_ENHANCEMENTS.MERCHANT.REROLL"}}
+					</button>
+					<button type="button" class="fbl-button merchant-clear"
+						title="{{localize "FBL_ENHANCEMENTS.MERCHANT.CLEAR_HINT"}}">
+						{{localize "FBL_ENHANCEMENTS.MERCHANT.CLEAR_ALL"}}
+					</button>
+				</div>
+			{{/if}}
+		</div>
+
+		<div class="item-list">
+			<div class="items">
+				{{#if hasGoods}}
+					<table class="merchant-table">
+						<thead>
+							<tr>
+								<th class="col-name">{{localize "FBL_ENHANCEMENTS.MERCHANT.ITEM"}}</th>
+								<th class="col-rarity">{{localize "FBL_ENHANCEMENTS.PRICE.RARITY"}}</th>
+								<th class="col-stock">{{localize "FBL_ENHANCEMENTS.MERCHANT.STOCK"}}</th>
+								<th class="col-price">{{localize "FBL_ENHANCEMENTS.MERCHANT.PRICE"}}</th>
+								<th class="col-actions"></th>
+							</tr>
+						</thead>
+						<tbody>
+							{{#each goods as |entry|}}
+								<tr class="item{{#if entry.soldOut}} sold-out{{/if}}" data-item-id="{{entry.id}}">
+									<td class="col-name">
+										{{!-- The flex row lives in a wrapper div, never on the <td> itself:
+										      a display:flex cell drops out of table-layout:fixed and shrinks
+										      to its content instead of filling the column. --}}
+										<div class="name-cell">
+											<img src="{{entry.img}}" width="28" height="28" alt="" />
+											<span class="name">{{entry.name}}</span>
+											<span class="type">{{entry.typeLabel}}</span>
+										</div>
+									</td>
+									<td class="col-rarity">{{entry.rarityLabel}}</td>
+									<td class="col-stock">
+										{{#if @root.isGM}}
+											<input class="stock" type="number" min="0" step="1" value="{{entry.stock}}"
+												title="{{localize "FBL_ENHANCEMENTS.MERCHANT.STOCK"}}" />
+										{{else}}
+											{{entry.stock}}
+										{{/if}}
+									</td>
+									<td class="col-price">
+										{{#if @root.isGM}}
+											<div class="price-inputs">
+												<input class="price-part" data-part="gold" type="number" min="0" step="1"
+													value="{{entry.price.gold}}"
+													title="{{localize "FBL_ENHANCEMENTS.PRICE.GOLD"}}" />
+												<input class="price-part" data-part="silver" type="number" min="0" step="1"
+													value="{{entry.price.silver}}"
+													title="{{localize "FBL_ENHANCEMENTS.PRICE.SILVER"}}" />
+												<input class="price-part" data-part="copper" type="number" min="0" step="1"
+													value="{{entry.price.copper}}"
+													title="{{localize "FBL_ENHANCEMENTS.PRICE.COPPER"}}" />
+											</div>
+										{{else}}
+											{{entry.priceLabel}}
+										{{/if}}
+									</td>
+									<td class="col-actions">
+										{{!-- Wrapper div, not the <td>: see the name column for why a flex
+										      table cell breaks table-layout:fixed. The GM controls are a
+										      separate group that never shrinks, so the trash button stays
+										      reachable on sold-out rows. --}}
+										<div class="actions-cell">
+											{{#if entry.soldOut}}
+												<span class="sold-out-label">{{localize "FBL_ENHANCEMENTS.MERCHANT.SOLD_OUT"}}</span>
+											{{else}}
+												<button type="button" class="fbl-button merchant-buy"
+													data-blocked="{{entry.blocked}}">
+													{{localize "FBL_ENHANCEMENTS.MERCHANT.BUY"}}
+												</button>
+											{{/if}}
+											{{#if @root.isGM}}
+												<span class="item-controls">
+													<button type="button" class="item-control item-edit"
+														title="{{localize "GEAR.EDIT"}}"><i class="fas fa-edit"></i></button>
+													<button type="button" class="item-control item-delete"
+														title="{{localize "GEAR.DELETE"}}"><i class="fas fa-trash"></i></button>
+												</span>
+											{{/if}}
+										</div>
+									</td>
+								</tr>
+							{{/each}}
+						</tbody>
+					</table>
+				{{else}}
+					<p class="merchant-empty">{{localize "FBL_ENHANCEMENTS.MERCHANT.EMPTY"}}</p>
+				{{/if}}
+			</div>
+		</div>
+
+		<footer class="merchant-buyer">
+			{{#if buyerName}}
+				<span>{{localize "FBL_ENHANCEMENTS.MERCHANT.BUYING_AS"}} <b>{{buyerName}}</b></span>
+				<span class="purse">{{buyerPurse}}</span>
+			{{else}}
+				<span class="warn">{{localize "FBL_ENHANCEMENTS.MERCHANT.NO_BUYER"}}</span>
+			{{/if}}
+		</footer>
+	</section>
+
+	{{#if isGM}}
+		<div class="merchant-description border">
+			<label>{{localize "FBL_ENHANCEMENTS.MERCHANT.DESCRIPTION"}}</label>
+			{{editor description target="system.description" owner=owner button=true editable=editable}}
+		</div>
+	{{/if}}
+</form>

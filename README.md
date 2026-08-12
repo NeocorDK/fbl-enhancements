@@ -109,31 +109,99 @@ as in-game days pass on the calendar.
 - All changes are made by the active GM only. Injuries that already existed before this feature was
   installed are initialized on world load.
 
+### 11. Merchants
+A merchant actor whose sheet is a stock editor for the GM and a storefront for players.
+
+- **Creating one:** create an Actor of type **Merchant** and drop its token on the canvas. New
+  merchants default to *Observer* permission for all players, so they can browse without any
+  per-merchant permission setup, and to a linked token so every copy shares one stock pool.
+- **Stocking it:** drag items — or a whole folder — onto the merchant sheet. Each item is rolled
+  against its rarity:
+
+  | Rarity | Available on `1d6` | Quantity |
+  |---|---|---|
+  | Common | 2+ | `2d12` |
+  | Uncommon | 4+ | `1d6` |
+  | Rare | 6 | 1 |
+
+  Items that come up unavailable are removed from the merchant. Stock rolls are silent — nothing
+  is posted to chat.
+- **Restocking a recurring merchant:** dropping goods the merchant already carries re-rolls that
+  entry instead of adding a duplicate row, so re-dropping the same folder refreshes the whole
+  assortment. Two GM buttons above the goods list do the same thing without dragging:
+  - **Supply reroll** — re-rolls availability and quantity for everything currently in stock.
+    Entries that come up unavailable are removed, exactly as on a first drop; re-drop the folder
+    to bring them back.
+  - **Clear all** — empties the merchant completely. Asks for confirmation, since it cannot be undone.
+- **Buying:** a player clicks *Buy*. The purchase is carried out by the active GM: coins are
+  deducted with denomination borrowing (paying 12 copper from 5 silver + 2 copper leaves 4 silver
+  and 0 copper — the rest of the purse is left alone), the item lands in the character's carried
+  gear, the merchant's stock drops by one, and a chat message announces the sale. The buyer is the
+  user's assigned character, or the single selected token if none is assigned.
+- **Running out:** at zero stock the row stays visible to the GM, marked *Sold out* with an editable
+  stock field for restocking, and disappears entirely for players.
+- Two players clicking the last unit at the same moment resolve in order — exactly one succeeds.
+
+### 12. Item prices and rarity
+The Forbidden Lands system stores an item's price as free text (`5 copper`, `8 silver`) and its
+rarity as free text (`Common` / `Uncommon` / `Rare`), which nothing can compute with. The module
+parses both into structured values stored in its own item flags — **the system's own Cost and
+Supply fields are never modified.**
+
+- Gear, weapon, armor, and raw-material sheets gain a gold / silver / copper price row and a rarity
+  dropdown, both editable and saved with the rest of the sheet.
+- Prices use 1 gold = 10 silver = 100 copper, matching the character sheet's currency fields. A
+  bare number with no denomination word is read as copper.
+- **Migration** runs once automatically on world load (active GM only) and reports its results. It
+  can be re-run at any time from *Configure Settings → Price migration*, optionally limited to world
+  items or actor-owned items, and optionally overwriting prices you have already set.
+- Items created later (compendium imports, new gear) are priced as they are created.
+- The system's Cost and Supply text fields stay the source of record: editing either one
+  re-parses it into the structured value straight away, so typing `Rare` into Supply after an
+  item already exists takes effect immediately. Picking a rarity from the dropdown instead
+  overrides the text and is not overwritten by later migrations.
+
 ## Module settings
 The module adds world settings (checkboxes):
 - `Combat automation in chat`
 - `Rest confirmation dialog`
 - `Critical injury healing countdown`
+- `Merchant automation`
+- `Announce purchases in chat`
 - `Enable calendar`
 - `Calendar visible to players`
 - `Calendar Setup` (menu) — configure phases, lunar cycle, starting year, and set the current date/time
+- `Price migration` (menu) — re-run the Cost/Supply → price/rarity migration
+
+## Disabling the module
+Merchant actors are a module sub-type. If the module is disabled, the world still loads, but
+existing merchants appear as unknown-subtype placeholders until it is re-enabled. Nothing is lost.
 
 ## How it works (technical overview)
 - Uses runtime patches/hooks only (no direct modifications to base Forbidden Lands system files).
 - Overrides YZ roll chat template with module template for combat card UI.
 - Patches roll handling to preserve attack metadata (damage type, attack category/ammo, target ids).
 - Stores attack state in message flags and synchronizes state updates via active GM when needed.
-- Adds localized UI strings through module language files (`lang/en.json`, `lang/ru.json`).
+- Adds localized UI strings through module language files (`lang/*.json`: en, ru, es, de, pt-BR).
+- Adds the merchant actor sub-type through the manifest's `documentTypes`, with a `TypeDataModel`
+  and its own sheet, so the base system's `template.json` is never touched.
+- Stores prices, rarity, and merchant stock in item flags rather than system fields, so nothing the
+  module writes can collide with a system update.
 
 ## Project structure
 - `module.json` - Foundry module manifest
 - `scripts/main.js` - module runtime patches, hooks, automation logic
 - `scripts/calendar.js` - built-in calendar: date/moon engine, calendar window, setup form
+- `scripts/economy.js` - price/rarity parsing, item sheet price fields, price migration
+- `scripts/merchant.js` - merchant actor type, sheet, stock rolls, purchases
 - `templates/roll.hbs` - custom roll chat card template
 - `templates/dialog.hbs` - custom roll dialog template (with damage type selection)
 - `templates/calendar.hbs`, `templates/calendar-config.hbs` - calendar window and setup form
+- `templates/merchant-sheet.hbs` - merchant sheet (GM stock editor / player storefront)
+- `templates/price-migration.hbs` - price migration form
 - `styles/fbl-enhancements.css` - chat card/button styling
 - `styles/fbl-calendar.css` - calendar styling (Forbidden Lands theme)
+- `styles/fbl-merchant.css` - merchant sheet and item price field styling
 - `lang/*.json` - localization files (en, ru, es, de, pt-BR). The calendar is fully translatable
   through these files — adding a language needs only a new JSON file and a `languages` entry in
   `module.json`, with no code changes.

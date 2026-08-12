@@ -1,4 +1,5 @@
 {
+  "TYPES.Actor.fbl-enhancements.merchant": "Mercader",
   "FBL_ENHANCEMENTS": {
     "MODULE_TITLE": "Mejoras de Forbidden Lands",
     "REST_CONFIRM": {
@@ -17,7 +18,66 @@
       "INJURY_HEALING": {
         "NAME": "Cuenta atrás de curación de heridas",
         "HINT": "Reduce automáticamente el tiempo de curación de cada herida crítica a medida que pasan los días de juego en el calendario, eliminando la herida y anunciando la recuperación al sanar."
+      },
+      "MERCHANT_AUTOMATION": {
+        "NAME": "Automatización de mercaderes",
+        "HINT": "Tira la disponibilidad y la cantidad al añadir objetos a un mercader, y permite que los jugadores compren desde su hoja."
+      },
+      "MERCHANT_ANNOUNCE": {
+        "NAME": "Anunciar las compras en el chat",
+        "HINT": "Publica un mensaje en el chat cada vez que un personaje compra algo a un mercader."
+      },
+      "PRICE_MIGRATION": {
+        "NAME": "Migración de precios",
+        "HINT": "Interpreta el texto de Coste y Suministro de cada objeto y lo convierte en los campos estructurados de precio y rareza del módulo. Los campos del sistema no se modifican.",
+        "MENU_LABEL": "Ejecutar migración de precios",
+        "TITLE": "Migración de precios",
+        "SCOPE_WORLD": "Objetos del directorio de objetos del mundo",
+        "SCOPE_ACTORS": "Objetos en posesión de actores",
+        "OVERWRITE": "Sobrescribir los precios existentes",
+        "OVERWRITE_HINT": "Sin esta opción solo se actualizan los objetos sin precio, o aquellos cuyo texto de Coste haya cambiado desde la última lectura.",
+        "RUN": "Ejecutar migración",
+        "RESULT": "Migración de precios: {scanned} revisados, {updated} actualizados, {skipped} sin cambios, {failed} sin interpretar."
       }
+    },
+    "PRICE": {
+      "LABEL": "Precio",
+      "GOLD": "Oro",
+      "SILVER": "Plata",
+      "COPPER": "Cobre",
+      "GOLD_SHORT": "mo",
+      "SILVER_SHORT": "mp",
+      "COPPER_SHORT": "mc",
+      "RARITY": "Rareza",
+      "RARITY_COMMON": "Común",
+      "RARITY_UNCOMMON": "Poco común",
+      "RARITY_RARE": "Raro"
+    },
+    "MERCHANT": {
+      "SHEET": "Hoja de mercader",
+      "NAME": "Mercader",
+      "DESCRIPTION": "Descripción",
+      "GOODS": "Mercancías",
+      "ITEM": "Objeto",
+      "STOCK": "Existencias",
+      "PRICE": "Precio",
+      "BUY": "Comprar",
+      "SOLD_OUT": "Agotado",
+      "EMPTY": "Este mercader no tiene nada a la venta.",
+      "DROP_HINT": "Arrastra aquí objetos o una carpeta para abastecer al mercader.",
+      "BUYING_AS": "Compra",
+      "NO_BUYER": "Selecciona un único token o asigna un personaje con el que comprar.",
+      "NO_PRICE": "Este objeto no tiene precio asignado.",
+      "NOT_ENOUGH_COINS": "No hay monedas suficientes para esta compra.",
+      "OUT_OF_STOCK": "Este objeto está agotado.",
+      "NO_ACTIVE_GM": "No hay ningún DJ activo: las compras no se pueden procesar ahora.",
+      "PURCHASE_FAILED": "No se pudo completar la compra.",
+      "PURCHASED": "{actor} ha comprado {item} por {price}.",
+      "REROLL": "Retirar suministro",
+      "REROLL_HINT": "Vuelve a tirar disponibilidad y cantidad de todo el inventario. Los objetos no disponibles se eliminan.",
+      "CLEAR_ALL": "Vaciar todo",
+      "CLEAR_HINT": "Elimina todo el surtido del mercader.",
+      "CLEAR_CONFIRM": "¿Eliminar todos los objetos de este mercader?"
     },
     "INJURY": {
       "DAYS": "{n} días",

@@ -1,4 +1,5 @@
 {
+  "TYPES.Actor.fbl-enhancements.merchant": "Mercador",
   "FBL_ENHANCEMENTS": {
     "MODULE_TITLE": "Melhorias de Forbidden Lands",
     "REST_CONFIRM": {
@@ -17,7 +18,66 @@
       "INJURY_HEALING": {
         "NAME": "Contagem regressiva de cura de ferimentos",
         "HINT": "Reduz automaticamente o tempo de cura de cada ferimento crítico conforme os dias de jogo passam no calendário, removendo o ferimento e anunciando a recuperação quando ele sara."
+      },
+      "MERCHANT_AUTOMATION": {
+        "NAME": "Automação de mercadores",
+        "HINT": "Rola disponibilidade e quantidade ao adicionar itens a um mercador e permite que os jogadores comprem pela ficha do mercador."
+      },
+      "MERCHANT_ANNOUNCE": {
+        "NAME": "Anunciar compras no chat",
+        "HINT": "Publica uma mensagem pública no chat sempre que um personagem compra algo de um mercador."
+      },
+      "PRICE_MIGRATION": {
+        "NAME": "Migração de preços",
+        "HINT": "Interpreta o texto de Custo e Suprimento de cada item e o converte nos campos estruturados de preço e raridade do módulo. Os campos do sistema não são alterados.",
+        "MENU_LABEL": "Executar migração de preços",
+        "TITLE": "Migração de preços",
+        "SCOPE_WORLD": "Itens no diretório de itens do mundo",
+        "SCOPE_ACTORS": "Itens pertencentes a atores",
+        "OVERWRITE": "Sobrescrever preços existentes",
+        "OVERWRITE_HINT": "Sem esta opção, apenas itens sem preço — ou cujo texto de Custo mudou desde a última leitura — são atualizados.",
+        "RUN": "Executar migração",
+        "RESULT": "Migração de preços: {scanned} verificados, {updated} atualizados, {skipped} sem alteração, {failed} não interpretados."
       }
+    },
+    "PRICE": {
+      "LABEL": "Preço",
+      "GOLD": "Ouro",
+      "SILVER": "Prata",
+      "COPPER": "Cobre",
+      "GOLD_SHORT": "mo",
+      "SILVER_SHORT": "mp",
+      "COPPER_SHORT": "mc",
+      "RARITY": "Raridade",
+      "RARITY_COMMON": "Comum",
+      "RARITY_UNCOMMON": "Incomum",
+      "RARITY_RARE": "Raro"
+    },
+    "MERCHANT": {
+      "SHEET": "Ficha de mercador",
+      "NAME": "Mercador",
+      "DESCRIPTION": "Descrição",
+      "GOODS": "Mercadorias",
+      "ITEM": "Item",
+      "STOCK": "Estoque",
+      "PRICE": "Preço",
+      "BUY": "Comprar",
+      "SOLD_OUT": "Esgotado",
+      "EMPTY": "Este mercador não tem nada à venda.",
+      "DROP_HINT": "Arraste itens ou uma pasta para cá para abastecer o mercador.",
+      "BUYING_AS": "Comprando como",
+      "NO_BUYER": "Selecione um único token ou atribua um personagem para realizar a compra.",
+      "NO_PRICE": "Este item não tem preço definido.",
+      "NOT_ENOUGH_COINS": "Moedas insuficientes para esta compra.",
+      "OUT_OF_STOCK": "Este item está esgotado.",
+      "NO_ACTIVE_GM": "Nenhum mestre ativo — as compras não podem ser processadas agora.",
+      "PURCHASE_FAILED": "Não foi possível concluir a compra.",
+      "PURCHASED": "{actor} comprou {item} por {price}.",
+      "REROLL": "Rerrolar estoque",
+      "REROLL_HINT": "Rola novamente disponibilidade e quantidade de todo o sortimento. Itens indisponíveis são removidos.",
+      "CLEAR_ALL": "Limpar tudo",
+      "CLEAR_HINT": "Remove todo o sortimento do mercador.",
+      "CLEAR_CONFIRM": "Remover todos os itens deste mercador?"
     },
     "INJURY": {
       "DAYS": "{n} dias",

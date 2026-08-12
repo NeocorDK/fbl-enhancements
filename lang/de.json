@@ -1,4 +1,5 @@
 {
+  "TYPES.Actor.fbl-enhancements.merchant": "Händler",
   "FBL_ENHANCEMENTS": {
     "MODULE_TITLE": "Forbidden Lands Erweiterungen",
     "REST_CONFIRM": {
@@ -17,7 +18,66 @@
       "INJURY_HEALING": {
         "NAME": "Countdown der Verletzungsheilung",
         "HINT": "Zählt die Heilungszeit jeder kritischen Verletzung automatisch herunter, während im Kalender Spieltage vergehen, entfernt die Verletzung und meldet die Genesung, sobald sie geheilt ist."
+      },
+      "MERCHANT_AUTOMATION": {
+        "NAME": "Händler-Automatisierung",
+        "HINT": "Würfelt Verfügbarkeit und Menge, wenn einem Händler Gegenstände hinzugefügt werden, und erlaubt Spielern den Kauf über den Händlerbogen."
+      },
+      "MERCHANT_ANNOUNCE": {
+        "NAME": "Käufe im Chat ankündigen",
+        "HINT": "Sendet eine öffentliche Chatnachricht, sobald ein Charakter etwas bei einem Händler kauft."
+      },
+      "PRICE_MIGRATION": {
+        "NAME": "Preis-Migration",
+        "HINT": "Liest die Text-Felder Kosten und Verfügbarkeit aller Gegenstände aus und überträgt sie in die strukturierten Preis- und Seltenheitsfelder des Moduls. Die Felder des Systems bleiben unverändert.",
+        "MENU_LABEL": "Preis-Migration ausführen",
+        "TITLE": "Preis-Migration",
+        "SCOPE_WORLD": "Gegenstände im Weltverzeichnis",
+        "SCOPE_ACTORS": "Gegenstände im Besitz von Akteuren",
+        "OVERWRITE": "Vorhandene Preise überschreiben",
+        "OVERWRITE_HINT": "Ohne diese Option werden nur Gegenstände ohne Preis aktualisiert — oder solche, deren Kosten-Text sich seit der letzten Auswertung geändert hat.",
+        "RUN": "Migration ausführen",
+        "RESULT": "Preis-Migration: {scanned} geprüft, {updated} aktualisiert, {skipped} unverändert, {failed} nicht auswertbar."
       }
+    },
+    "PRICE": {
+      "LABEL": "Preis",
+      "GOLD": "Gold",
+      "SILVER": "Silber",
+      "COPPER": "Kupfer",
+      "GOLD_SHORT": "GM",
+      "SILVER_SHORT": "SM",
+      "COPPER_SHORT": "KM",
+      "RARITY": "Seltenheit",
+      "RARITY_COMMON": "Häufig",
+      "RARITY_UNCOMMON": "Ungewöhnlich",
+      "RARITY_RARE": "Selten"
+    },
+    "MERCHANT": {
+      "SHEET": "Händlerbogen",
+      "NAME": "Händler",
+      "DESCRIPTION": "Beschreibung",
+      "GOODS": "Waren",
+      "ITEM": "Gegenstand",
+      "STOCK": "Bestand",
+      "PRICE": "Preis",
+      "BUY": "Kaufen",
+      "SOLD_OUT": "Ausverkauft",
+      "EMPTY": "Dieser Händler hat nichts im Angebot.",
+      "DROP_HINT": "Ziehe Gegenstände oder einen Ordner hierher, um den Händler zu bestücken.",
+      "BUYING_AS": "Kauft als",
+      "NO_BUYER": "Wähle ein einzelnes Token aus oder weise einen Charakter zu, mit dem gekauft werden soll.",
+      "NO_PRICE": "Für diesen Gegenstand ist kein Preis festgelegt.",
+      "NOT_ENOUGH_COINS": "Nicht genug Münzen für diesen Kauf.",
+      "OUT_OF_STOCK": "Dieser Gegenstand ist ausverkauft.",
+      "NO_ACTIVE_GM": "Kein aktiver SL — Käufe können derzeit nicht verarbeitet werden.",
+      "PURCHASE_FAILED": "Der Kauf konnte nicht abgeschlossen werden.",
+      "PURCHASED": "{actor} hat {item} für {price} gekauft.",
+      "REROLL": "Warenbestand neu würfeln",
+      "REROLL_HINT": "Würfelt Verfügbarkeit und Menge für das gesamte Sortiment neu. Nicht verfügbare Gegenstände werden entfernt.",
+      "CLEAR_ALL": "Alles leeren",
+      "CLEAR_HINT": "Entfernt das gesamte Sortiment des Händlers.",
+      "CLEAR_CONFIRM": "Alle Gegenstände dieses Händlers entfernen?"
     },
     "INJURY": {
       "DAYS": "{n} Tage",
