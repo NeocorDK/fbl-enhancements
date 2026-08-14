@@ -467,9 +467,11 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 			event.preventDefault();
 			// Wiping the whole assortment cannot be undone, so it is the one action here
 			// that asks first. The reroll is not guarded: re-dropping the folder restores it.
-			const confirmed = await Dialog.confirm({
-				title: l("MERCHANT.CLEAR_ALL"),
+			const confirmed = await foundry.applications.api.DialogV2.confirm({
+				window: { title: l("MERCHANT.CLEAR_ALL") },
 				content: `<p>${l("MERCHANT.CLEAR_CONFIRM")}</p>`,
+				modal: true,
+				rejectClose: false,
 			});
 			if (confirmed) await clearMerchantStock(this.actor);
 		});
@@ -598,8 +600,9 @@ function registerMerchantHooks() {
 Hooks.once("init", () => {
 	CONFIG.Actor.dataModels[MERCHANT_TYPE] = MerchantData;
 
-	const actors = foundry.documents?.collections?.Actors ?? Actors;
-	actors.registerSheet(MODULE_ID, FblMerchantSheet, {
+	// The bare `Actors` global is a deprecated backwards-compatibility reference in V14
+	// (removed in V16); address the collection through its namespaced path only.
+	foundry.documents.collections.Actors.registerSheet(MODULE_ID, FblMerchantSheet, {
 		types: [MERCHANT_TYPE],
 		makeDefault: true,
 		label: "FBL_ENHANCEMENTS.MERCHANT.SHEET",

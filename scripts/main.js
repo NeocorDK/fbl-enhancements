@@ -1276,12 +1276,12 @@ function registerRestConfirmationHook() {
 					if (!isEnabled(SETTING_REST_CONFIRMATION)) return;
 					event.preventDefault();
 					event.stopImmediatePropagation();
-					const confirmed = await Dialog.confirm({
-						title: l("REST_CONFIRM.TITLE"),
+					const confirmed = await foundry.applications.api.DialogV2.confirm({
+						window: { title: l("REST_CONFIRM.TITLE") },
 						content: `<p>${l("REST_CONFIRM.CONTENT")}</p>`,
-						yes: () => true,
-						no: () => false,
-						defaultYes: false,
+						modal: true,
+						// Dismissing the dialog resolves to null rather than throwing.
+						rejectClose: false,
 					});
 					if (!confirmed) return;
 					await app.actor?.rest?.();

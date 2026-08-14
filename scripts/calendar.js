@@ -505,7 +505,8 @@ function registerSceneControl() {
 	Hooks.on("getSceneControlButtons", (controls) => {
 		if (!calendarVisibleToUser()) return;
 
-		// V13 passes an object keyed by control name, each with a `tools` object.
+		// V14 passes an object keyed by control name, each with a `tools` object
+		// (Record<string, SceneControl> — unchanged from V13).
 		const tokenControl = controls?.tokens;
 		if (!tokenControl?.tools) {
 			console.warn(`${MODULE_ID} | calendar: unexpected scene-control structure, skipping toggle`);
@@ -518,8 +519,9 @@ function registerSceneControl() {
 			icon: "fas fa-calendar-days",
 			button: true,
 			order: 99,
+			// `button: true` tools resolve through onChange in V14's SceneControls
+			// (#onChangeTool → #onChange); there is no separate onClick contract.
 			onChange: () => openCalendar(),
-			onClick: () => openCalendar(),
 		};
 	});
 }
@@ -528,7 +530,7 @@ function registerSceneControl() {
 /*  Lifecycle                                    */
 /* -------------------------------------------- */
 
-// Registered immediately at module load (not deferred to "ready"): Foundry V13 builds the
+// Registered immediately at module load (not deferred to "ready"): Foundry builds the
 // scene-control toolbar before "ready" fires, and does not reliably re-invoke
 // "getSceneControlButtons" afterward. A listener attached inside Hooks.once("ready", ...)
 // can miss that first build entirely, leaving the calendar toggle permanently absent.

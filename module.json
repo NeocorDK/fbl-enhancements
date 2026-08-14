@@ -3,16 +3,16 @@
     "name":  "fbl-enhancements",
     "title":  "Forbidden Lands Enhancements",
     "description":  "Optional automation and combat enhancements for Forbidden Lands.",
-    "version":  "0.4.0",
+    "version":  "14.0.0",
     "authors":  [
                     {
                         "name":  "NeocorDK"
                     }
                 ],
     "compatibility":  {
-                          "minimum":  "13",
-                          "verified":  "13",
-                          "maximum":  "13"
+                          "minimum":  "14",
+                          "verified":  "14.365",
+                          "maximum":  "14"
                       },
     "esmodules":  [
                       "scripts/main.js",
@@ -69,14 +69,14 @@
                                                "type":  "system",
                                                "manifest":  "https://raw.githubusercontent.com/fvtt-fria-ligan/forbidden-lands-foundry-vtt/main/system.json",
                                                "compatibility":  {
-                                                                     "minimum":  "13.0.1",
-                                                                     "verified":  "13.0.5"
+                                                                     "minimum":  "14.0.0",
+                                                                     "verified":  "14.0.4"
                                                                  }
                                            }
                                        ]
                       },
     "socket": true,
     "url":  "https://github.com/NeocorDK/fbl-enhancements",
-    "manifest":  "https://raw.githubusercontent.com/NeocorDK/fbl-enhancements/main/module.json",
-    "download":  "https://github.com/NeocorDK/fbl-enhancements/releases/download/v0.4.0/fbl-enhancements.zip"
+    "manifest":  "https://raw.githubusercontent.com/NeocorDK/fbl-enhancements/v14/module.json",
+    "download":  "https://github.com/NeocorDK/fbl-enhancements/releases/download/v14.0.0/fbl-enhancements.zip"
 }
