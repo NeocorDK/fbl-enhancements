@@ -149,7 +149,43 @@ A merchant actor whose sheet is a stock editor for the GM and a storefront for p
   stock field for restocking, and disappears entirely for players.
 - Two players clicking the last unit at the same moment resolve in order — exactly one succeeds.
 
-### 12. Item prices and rarity
+### 12. Selling to a merchant
+The **Sell** tab is private per player — nobody can see what another player has queued to sell.
+
+- Drag items from your own inventory onto the Sell tab to add them to your list. The offered price
+  starts from the item's price, reduced for a damaged item and adjusted by the merchant's buy-price
+  modifier (see below). A fully broken item (0 condition) is offered at exactly 10% of full price;
+  the discount scales proportionally in between.
+- **Sell** sends your list to the GM for review and locks the tab until they decide. **Clear list**
+  empties it instantly with no GM involvement.
+- The GM's review window shows every item, quantity, and price, all editable — remove a line, change
+  a quantity, or type a different price — before **Accept** or **Reject**.
+  - **Accept:** you're paid the (possibly edited) total and the sold items/quantities leave your
+    inventory. Nothing is added back to the merchant's own stock.
+  - **Reject:** the lock lifts and your Sell tab shows the exact list you submitted, ready to edit
+    and resend.
+
+### 13. Repairing items
+An optional **Repair** tab, enabled per merchant in its settings (see below).
+
+- Drag a damaged or broken item onto the tab to see its repair cost, computed from the item's price
+  and its current/maximum condition, adjusted by the merchant's sell-price modifier.
+- **Repair** deducts the total cost from your character and restores every queued item to full
+  condition. There is no GM approval step — you already own the character being charged and repaired.
+
+### 14. Per-merchant settings
+Each merchant has its own **Merchant Settings** (GM only, button above the goods list):
+
+- **Sell price modifier** (-100% to +100%) — markup/discount on what this merchant charges players
+  buying goods, and on the repair cost.
+- **Buy price modifier** (-100% to +100%) — markup/discount on what this merchant offers players
+  selling their own items to it.
+- **Allow item repair** — toggles the Repair tab for this merchant.
+
+Both modifiers are entered as a slider or a typed percentage; they only affect the one merchant
+they're set on.
+
+### 15. Item prices and rarity
 The Forbidden Lands system stores an item's price as free text (`5 copper`, `8 silver`) and its
 rarity as free text (`Common` / `Uncommon` / `Rare`), which nothing can compute with. The module
 parses both into structured values stored in its own item flags — **the system's own Cost and
@@ -194,6 +230,10 @@ existing merchants appear as unknown-subtype placeholders until it is re-enabled
   and its own sheet, so the base system's `template.json` is never touched.
 - Stores prices, rarity, and merchant stock in item flags rather than system fields, so nothing the
   module writes can collide with a system update.
+- A player's sell/repair carts live in flags on their own character actor, never on the merchant —
+  each player already owns their own actor, so no socket is needed to build or edit a cart, and
+  Foundry's normal document permissions keep one player's cart invisible to another. Only the final
+  sell decision (GM accept/reject) and its wake-up notification travel over the socket.
 
 ## Project structure
 - `module.json` - Foundry module manifest
@@ -201,10 +241,13 @@ existing merchants appear as unknown-subtype placeholders until it is re-enabled
 - `scripts/calendar.js` - built-in calendar: date/moon engine, calendar window, setup form
 - `scripts/economy.js` - price/rarity parsing, item sheet price fields, price migration
 - `scripts/merchant.js` - merchant actor type, sheet, stock rolls, purchases
+- `scripts/merchant-trade.js` - selling to a merchant, repairs, per-merchant price modifiers
 - `templates/roll.hbs` - custom roll chat card template
 - `templates/dialog.hbs` - custom roll dialog template (with damage type selection)
 - `templates/calendar.hbs`, `templates/calendar-config.hbs` - calendar window and setup form
 - `templates/merchant-sheet.hbs` - merchant sheet (GM stock editor / player storefront)
+- `templates/merchant-sell-review.hbs` - GM review window for a player's sell offer
+- `templates/merchant-settings.hbs` - per-merchant settings form (price modifiers, repair toggle)
 - `templates/price-migration.hbs` - price migration form
 - `styles/fbl-enhancements.css` - chat card/button styling
 - `styles/fbl-calendar.css` - calendar styling (Forbidden Lands theme)

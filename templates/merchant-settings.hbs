@@ -1,0 +1,29 @@
+<div class="fbl-merchant-settings-body">
+	<div class="form-group">
+		<label>{{localize "FBL_ENHANCEMENTS.MERCHANT.SETTINGS.SELL_MODIFIER"}}</label>
+		<div class="modifier-pair">
+			<input type="range" min="-100" max="100" step="1" value="{{sellModifier}}" />
+			<input type="number" name="sellModifier" min="-100" max="100" step="1" data-dtype="Number" value="{{sellModifier}}" />
+			<span class="unit">%</span>
+		</div>
+		<p class="hint">{{localize "FBL_ENHANCEMENTS.MERCHANT.SETTINGS.SELL_MODIFIER_HINT"}}</p>
+	</div>
+
+	<div class="form-group">
+		<label>{{localize "FBL_ENHANCEMENTS.MERCHANT.SETTINGS.BUY_MODIFIER"}}</label>
+		<div class="modifier-pair">
+			<input type="range" min="-100" max="100" step="1" value="{{buyModifier}}" />
+			<input type="number" name="buyModifier" min="-100" max="100" step="1" data-dtype="Number" value="{{buyModifier}}" />
+			<span class="unit">%</span>
+		</div>
+		<p class="hint">{{localize "FBL_ENHANCEMENTS.MERCHANT.SETTINGS.BUY_MODIFIER_HINT"}}</p>
+	</div>
+
+	<div class="form-group">
+		<label>
+			<input type="checkbox" name="repairEnabled" {{#if repairEnabled}}checked{{/if}} />
+			{{localize "FBL_ENHANCEMENTS.MERCHANT.SETTINGS.REPAIR_ENABLED"}}
+		</label>
+		<p class="hint">{{localize "FBL_ENHANCEMENTS.MERCHANT.SETTINGS.REPAIR_ENABLED_HINT"}}</p>
+	</div>
+</div>

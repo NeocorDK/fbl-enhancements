@@ -1,0 +1,69 @@
+{{!--
+	GM sale-review dialog (ApplicationV2, action-map style — Accept/Reject are distinct
+	actions, not a single form submit). Reuses the merchant sheet's cart-table/fbl-button
+	class names so it inherits the same parchment/ink treatment without its own CSS scope.
+--}}
+<div class="fbl-merchant forbidden-lands">
+	<p class="review-subtitle">
+		<b>{{sellerName}}</b> &rarr; <b>{{merchantName}}</b>
+	</p>
+
+	{{#if empty}}
+		<p class="merchant-empty">{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.EMPTY"}}</p>
+	{{else}}
+		<table class="cart-table">
+			<thead>
+				<tr>
+					<th class="col-name">{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.ITEM"}}</th>
+					<th class="col-qty">{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.QTY"}}</th>
+					<th class="col-price">{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.PRICE"}}</th>
+					<th class="col-actions"></th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each lines as |line|}}
+					<tr class="item" data-item-id="{{line.itemId}}">
+						<td class="col-name">
+							<div class="name-cell">
+								<img src="{{line.img}}" width="28" height="28" alt="" />
+								<span class="name">{{line.name}}</span>
+							</div>
+						</td>
+						<td class="col-qty">
+							<input class="qty-input" type="number" min="1" max="{{line.maxQty}}" step="1" value="{{line.qty}}" />
+						</td>
+						<td class="col-price">
+							<div class="price-inputs">
+								<input class="price-part" data-part="gold" type="number" min="0" step="1" value="{{line.price.gold}}"
+									title="{{localize "FBL_ENHANCEMENTS.PRICE.GOLD"}}" />
+								<input class="price-part" data-part="silver" type="number" min="0" step="1" value="{{line.price.silver}}"
+									title="{{localize "FBL_ENHANCEMENTS.PRICE.SILVER"}}" />
+								<input class="price-part" data-part="copper" type="number" min="0" step="1" value="{{line.price.copper}}"
+									title="{{localize "FBL_ENHANCEMENTS.PRICE.COPPER"}}" />
+							</div>
+							<div class="subtotal">{{line.subtotalLabel}}</div>
+						</td>
+						<td class="col-actions">
+							<button type="button" class="item-control" data-action="removeLine"
+								title="{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.REMOVE"}}">
+								<i class="fas fa-trash"></i>
+							</button>
+						</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
+		<div class="cart-total">
+			{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.TOTAL"}}: {{totalLabel}}
+		</div>
+	{{/if}}
+
+	<div class="review-buttons">
+		<button type="button" class="fbl-button" data-action="reject">
+			{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.REJECT"}}
+		</button>
+		<button type="button" class="fbl-button" data-action="accept" {{#if empty}}disabled{{/if}}>
+			{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.ACCEPT"}}
+		</button>
+	</div>
+</div>

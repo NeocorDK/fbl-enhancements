@@ -83,6 +83,9 @@
 .fbl-merchant .merchant-table th,
 .fbl-merchant .merchant-table td,
 .fbl-merchant .merchant-table button,
+.fbl-merchant .cart-table th,
+.fbl-merchant .cart-table td,
+.fbl-merchant .cart-table button,
 .fbl-merchant .merchant-description,
 .fbl-merchant .merchant-description * {
 	color: #191813;
@@ -408,6 +411,270 @@
 	text-transform: uppercase;
 }
 
+/* --- Tab nav (Goods / Sell / Repair) --- */
+
+.fbl-merchant .sheet-tabs {
+	gap: 4px;
+	padding: 0 4px;
+	border-bottom: 2px solid var(--color-border, #1114);
+}
+
+.fbl-merchant .sheet-tabs .tab-item {
+	padding: 4px 10px;
+	font-family: var(--font-header-sc, serif);
+	font-size: var(--font-size-12, 12px);
+	font-weight: 700;
+	text-transform: uppercase;
+	cursor: pointer;
+	opacity: 0.6;
+	border-bottom: 2px solid transparent;
+}
+
+.fbl-merchant .sheet-tabs .tab-item:hover {
+	opacity: 0.85;
+}
+
+.fbl-merchant .sheet-tabs .tab-item.active {
+	opacity: 1;
+	border-bottom-color: var(--color-theme-accent, #a00404);
+}
+
+.fbl-merchant .sheet-body {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	flex: 1;
+}
+
+.fbl-merchant .sheet-body .tab {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	flex: 1;
+	gap: 8px;
+}
+
+/* --- Drop zones (Sell / Repair tabs) --- */
+
+.fbl-merchant .merchant-dropzone {
+	padding: 14px 8px;
+	text-align: center;
+	font-size: var(--font-size-11, 11px);
+	opacity: 0.75;
+	border: 2px dashed rgba(0, 0, 0, 0.35);
+}
+
+.fbl-merchant .merchant-dropzone.dragover {
+	opacity: 1;
+	border-color: var(--color-theme-accent, #a00404);
+	background: rgba(160, 4, 4, 0.08);
+}
+
+/* --- Cart tables (Sell / Repair tabs, and the GM review dialog) --- */
+
+.fbl-merchant .cart-table {
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: collapse;
+}
+
+.fbl-merchant .cart-table thead th {
+	background: transparent;
+	font-family: var(--font-alternative, sans-serif);
+	font-size: var(--font-size-11, 11px);
+	font-weight: 700;
+	text-transform: uppercase;
+	text-align: left;
+	padding: 4px 3px;
+	border: none;
+	border-bottom: 2px solid var(--color-border, #1114);
+}
+
+.fbl-merchant .cart-table tbody td {
+	padding: 4px;
+	vertical-align: middle;
+	border-bottom: 1px solid var(--color-border, #1114);
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.fbl-merchant .cart-table tbody tr:nth-child(odd) {
+	background: rgba(0, 0, 0, 0.05);
+}
+
+.fbl-merchant .cart-table tr.unavailable {
+	opacity: 0.5;
+	font-style: italic;
+}
+
+.fbl-merchant .cart-table .col-qty,
+.fbl-merchant .cart-table .col-condition {
+	width: 18%;
+}
+
+.fbl-merchant .cart-table .col-price {
+	width: 28%;
+}
+
+.fbl-merchant .cart-table .col-actions {
+	width: 10%;
+	text-align: right;
+}
+
+.fbl-merchant .cart-table input,
+.fbl-merchant .cart-table .price-inputs {
+	width: 100%;
+	min-width: 0;
+}
+
+.fbl-merchant .cart-table input {
+	text-align: right;
+	background: rgba(255, 255, 255, 0.5);
+	border: 1px solid rgba(0, 0, 0, 0.35);
+	box-shadow: none;
+}
+
+.fbl-merchant .cart-table .price-inputs {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 3px;
+}
+
+.fbl-merchant .cart-table .subtotal {
+	margin-top: 2px;
+	font-size: var(--font-size-11, 11px);
+	text-align: right;
+	opacity: 0.8;
+}
+
+.fbl-merchant .cart-table .item-control {
+	width: 22px;
+	padding: 0;
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #191813;
+}
+
+.fbl-merchant .cart-table .item-control:hover,
+.fbl-merchant .sell-cart-remove:hover,
+.fbl-merchant .repair-cart-remove:hover {
+	color: var(--color-theme-accent, #a00404);
+}
+
+.fbl-merchant .sell-cart-remove,
+.fbl-merchant .repair-cart-remove {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #191813;
+}
+
+.fbl-merchant .cart-total {
+	padding: 4px;
+	text-align: right;
+	font-family: var(--font-alternative, sans-serif);
+	font-weight: 700;
+}
+
+.fbl-merchant .pending-banner {
+	padding: 8px;
+	text-align: center;
+	font-weight: 700;
+	color: var(--color-theme-accent, #a00404);
+	border: 2px solid var(--color-theme-accent, #a00404);
+}
+
+/* --- GM "Pending Sell Requests" panel (Goods tab) --- */
+
+.fbl-merchant .pending-requests {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 4px;
+	margin-bottom: 6px;
+	border: 1px solid var(--color-border, #1114);
+}
+
+.fbl-merchant .pending-request-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	font-size: var(--font-size-12, 12px);
+}
+
+/* --- GM sale-review dialog ---
+ *
+ * A plain ApplicationV2 window, not the AppV1 <form> the sheet's own dark-ink rules above
+ * are scoped to — so it needs its own (identical) treatment, applied bluntly to every
+ * descendant of the body template's own .fbl-merchant root.
+ */
+
+.fbl-merchant-sell-review .fbl-merchant,
+.fbl-merchant-sell-review .fbl-merchant * {
+	color: #191813;
+	text-shadow: none;
+}
+
+.fbl-merchant-sell-review .fbl-merchant {
+	display: block;
+	padding: 4px;
+	font-family: var(--font-body, sans-serif);
+}
+
+.fbl-merchant-sell-review .review-subtitle {
+	margin: 0 0 8px;
+	font-family: var(--font-header-sc, serif);
+}
+
+.fbl-merchant-sell-review .review-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 6px;
+	margin-top: 10px;
+}
+
+.fbl-merchant-sell-review .fbl-button {
+	padding: 3px 10px;
+	font-family: var(--font-header-sc, serif);
+	font-size: var(--font-size-12, 12px);
+	font-weight: 700;
+	text-transform: uppercase;
+	background: #e8e0cd;
+	border: 2px solid #1114;
+	box-shadow: inset 0 0 0 1px #fff6;
+	cursor: pointer;
+}
+
+.fbl-merchant-sell-review .fbl-button:hover:not(:disabled) {
+	border-color: var(--color-theme-accent, #a00404);
+}
+
+.fbl-merchant-sell-review .fbl-button:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+/* --- Per-merchant settings dialog (standard-form, like the price-migration dialog) --- */
+
+.fbl-merchant-settings .modifier-pair {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.fbl-merchant-settings .modifier-pair input[type="range"] {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.fbl-merchant-settings .modifier-pair input[type="number"] {
+	flex: 0 0 auto;
+	width: 4.5em;
+	text-align: right;
+}
+
 /*
  * Dark theme: deliberately NO light-text overrides here.
  *
@@ -417,6 +684,9 @@
  */
 body.theme-dark .fbl-merchant .merchant-table thead th,
 body.theme-dark .fbl-merchant .merchant-table tbody td,
-body.theme-dark .fbl-merchant .merchant-buyer {
+body.theme-dark .fbl-merchant .cart-table thead th,
+body.theme-dark .fbl-merchant .cart-table tbody td,
+body.theme-dark .fbl-merchant .merchant-buyer,
+body.theme-dark .fbl-merchant .sheet-tabs {
 	border-color: #00000033;
 }

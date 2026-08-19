@@ -17,6 +17,9 @@
 
 export const MODULE_ID = "fbl-enhancements";
 
+/** Module sub-types are always namespaced by the module id. */
+export const MERCHANT_TYPE = `${MODULE_ID}.merchant`;
+
 export const PRICE_FLAG = "price";
 export const PRICE_SOURCE_FLAG = "priceSource";
 export const RARITY_FLAG = "rarity";
@@ -150,6 +153,74 @@ export function normalizeRarity(value, fallback = "common") {
 export function getRarityLabel(rarity) {
 	return l(RARITY_LABELS[normalizeRarity(rarity)]);
 }
+
+/**
+ * Subtract a price from a purse, breaking a higher denomination into 10 of the next one
+ * whenever the current denomination runs short — the same borrowing the system's own
+ * currency buttons perform. Preserves the rest of the purse instead of re-normalizing
+ * it: 5 silver + 2 copper paying 12 copper leaves 4 silver + 0 copper.
+ *
+ * @returns {{gold:number,silver:number,copper:number}|null} null when unaffordable.
+ */
+export function deductCoins(actor, price) {
+	const currency = actor.system?.currency ?? {};
+	const coins = [
+		Number(currency.gold?.value) || 0,
+		Number(currency.silver?.value) || 0,
+		Number(currency.copper?.value) || 0,
+	];
+	const cost = [price.gold, price.silver, price.copper];
+	for (let i = 0; i < coins.length; i++) coins[i] -= cost[i];
+
+	for (let i = coins.length - 1; i > 0; i--) {
+		if (coins[i] >= 0) continue;
+		const borrowed = Math.ceil(-coins[i] / 10);
+		coins[i - 1] -= borrowed;
+		coins[i] += borrowed * 10;
+	}
+
+	if (coins[0] < 0) return null;
+	return { gold: coins[0], silver: coins[1], copper: coins[2] };
+}
+
+/**
+ * Add a price to a purse. Unlike `deductCoins`, a credit can never fail or need to
+ * borrow — each denomination is simply added to independently, leaving the rest of the
+ * purse's shape untouched (matching the "don't renormalize" philosophy of `deductCoins`).
+ */
+export function creditCoins(actor, price) {
+	const currency = actor.system?.currency ?? {};
+	const p = normalizePrice(price);
+	return {
+		gold: (Number(currency.gold?.value) || 0) + p.gold,
+		silver: (Number(currency.silver?.value) || 0) + p.silver,
+		copper: (Number(currency.copper?.value) || 0) + p.copper,
+	};
+}
+
+/** Apply a -100..100 percent markup/discount to a copper amount, floored at 0. */
+export function applyModifier(copperAmount, percent) {
+	const pct = Math.max(-100, Math.min(100, Number(percent) || 0));
+	return Math.max(0, Math.round((Number(copperAmount) || 0) * (1 + pct / 100)));
+}
+
+/** Total worth of an actor's purse in copper. */
+export function getPurseCopper(actor) {
+	const currency = actor?.system?.currency;
+	if (!currency) return 0;
+	return toCopper({
+		gold: currency.gold?.value,
+		silver: currency.silver?.value,
+		copper: currency.copper?.value,
+	});
+}
+
+/** Item/actor names reach chat as raw HTML; escape them rather than trusting a helper. */
+export const escapeHTML = (value) =>
+	String(value ?? "").replace(
+		/[&<>"']/g,
+		(char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char],
+	);
 
 /** Short localized price label ("1 gp 2 sp"), for chat lines and tooltips. */
 export function formatPrice(price) {

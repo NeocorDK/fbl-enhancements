@@ -13,11 +13,16 @@
  */
 
 import {
+	MERCHANT_TYPE,
 	MODULE_ID,
 	PRICE_FLAG,
+	deductCoins,
+	escapeHTML,
 	formatPrice,
+	fromCopper,
 	getItemPrice,
 	getItemRarity,
+	getPurseCopper,
 	isActiveGM,
 	l,
 	normalizePrice,
@@ -25,9 +30,27 @@ import {
 	parseRarity,
 	toCopper,
 } from "./economy.js";
+import {
+	addToRepairCart,
+	addToSellCart,
+	clearSellCart,
+	findPendingSellRequests,
+	getMerchantBuyPrice,
+	isSellPending,
+	performRepair,
+	registerMerchantTradeSocket,
+	removeFromRepairCart,
+	removeFromSellCart,
+	resolveRepairCartLines,
+	resolveSellCartLines,
+	resolveUserCharacter,
+	reviewSellRequest,
+	setSellCartQty,
+	submitSellCart,
+	MerchantSettingsApp,
+} from "./merchant-trade.js";
 
-/** Module sub-types are always namespaced by the module id. */
-export const MERCHANT_TYPE = `${MODULE_ID}.merchant`;
+export { MERCHANT_TYPE };
 
 const STOCK_FLAG = "stock";
 const STOCK_ROLLED_FLAG = "stockRolled";
@@ -64,13 +87,6 @@ const STOCK_RULES = {
 
 const isAutomationEnabled = () => !!game.settings.get(MODULE_ID, SETTING_MERCHANT_AUTOMATION);
 
-/** Item names reach chat as raw HTML; escape them locally rather than trusting a helper. */
-const escapeHTML = (value) =>
-	String(value ?? "").replace(
-		/[&<>"']/g,
-		(char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char],
-	);
-
 /* -------------------------------------------- */
 /*  Data model                                  */
 /* -------------------------------------------- */
@@ -78,7 +94,29 @@ const escapeHTML = (value) =>
 class MerchantData extends foundry.abstract.TypeDataModel {
 	static defineSchema() {
 		const fields = foundry.data.fields;
-		return { description: new fields.HTMLField({ required: false, blank: true }) };
+		return {
+			description: new fields.HTMLField({ required: false, blank: true }),
+			// Percent markup/discount, -100..100. sellModifier biases what this merchant
+			// charges players (Goods tab + repair cost); buyModifier biases what it offers
+			// players for their own items (Sell tab). Both default to 0 (no change).
+			sellModifier: new fields.NumberField({
+				required: true,
+				nullable: false,
+				initial: 0,
+				min: -100,
+				max: 100,
+				step: 1,
+			}),
+			buyModifier: new fields.NumberField({
+				required: true,
+				nullable: false,
+				initial: 0,
+				min: -100,
+				max: 100,
+				step: 1,
+			}),
+			repairEnabled: new fields.BooleanField({ required: true, initial: false }),
+		};
 	}
 }
 
@@ -94,17 +132,6 @@ function getStock(item) {
 	const raw = item?.getFlag?.(MODULE_ID, STOCK_FLAG);
 	const stock = Number(raw);
 	return Number.isFinite(stock) ? Math.max(0, Math.round(stock)) : 1;
-}
-
-/** Total worth of an actor's purse in copper. */
-function getPurseCopper(actor) {
-	const currency = actor?.system?.currency;
-	if (!currency) return 0;
-	return toCopper({
-		gold: currency.gold?.value,
-		silver: currency.silver?.value,
-		copper: currency.copper?.value,
-	});
 }
 
 /* -------------------------------------------- */
@@ -204,49 +231,12 @@ async function clearMerchantStock(merchant) {
 /* -------------------------------------------- */
 
 /**
- * The character a Buy click should spend from: the user's assigned character, else the
- * single controlled token's actor (which is also how a GM picks a buyer). Anything
- * ambiguous resolves to nothing so we never guess with someone else's coins.
+ * The character a Buy/Sell/Repair click should act with: the user's assigned character,
+ * else the single controlled token's actor (which is also how a GM picks one). Anything
+ * ambiguous resolves to nothing so we never guess with someone else's coins. Defined in
+ * merchant-trade.js since the sell/repair flows need the identical resolution.
  */
-function resolveBuyer() {
-	const assigned = game.user.character;
-	if (assigned?.type === "character") return assigned;
-
-	const controlled = canvas?.tokens?.controlled ?? [];
-	if (controlled.length === 1 && controlled[0].actor?.type === "character") {
-		return controlled[0].actor;
-	}
-	return null;
-}
-
-/**
- * Subtract a price from a purse, breaking a higher denomination into 10 of the next one
- * whenever the current denomination runs short — the same borrowing the system's own
- * currency buttons perform. Preserves the rest of the purse instead of re-normalizing
- * it: 5 silver + 2 copper paying 12 copper leaves 4 silver + 0 copper.
- *
- * @returns {{gold:number,silver:number,copper:number}|null} null when unaffordable.
- */
-function deductCoins(actor, price) {
-	const currency = actor.system?.currency ?? {};
-	const coins = [
-		Number(currency.gold?.value) || 0,
-		Number(currency.silver?.value) || 0,
-		Number(currency.copper?.value) || 0,
-	];
-	const cost = [price.gold, price.silver, price.copper];
-	for (let i = 0; i < coins.length; i++) coins[i] -= cost[i];
-
-	for (let i = coins.length - 1; i > 0; i--) {
-		if (coins[i] >= 0) continue;
-		const borrowed = Math.ceil(-coins[i] / 10);
-		coins[i - 1] -= borrowed;
-		coins[i] += borrowed * 10;
-	}
-
-	if (coins[0] < 0) return null;
-	return { gold: coins[0], silver: coins[1], copper: coins[2] };
-}
+const resolveBuyer = resolveUserCharacter;
 
 // Purchases are serialized so two players racing for the last unit cannot both win:
 // the second request re-reads the stock only after the first has written it back.
@@ -280,7 +270,7 @@ async function performPurchase({ merchantUuid, itemUuid, buyerUuid }) {
 	const stock = getStock(item);
 	if (stock <= 0) return { ok: false, reason: "MERCHANT.OUT_OF_STOCK" };
 
-	const price = getItemPrice(item);
+	const price = getMerchantBuyPrice(item, merchant);
 	if (!price) return { ok: false, reason: "MERCHANT.NO_PRICE" };
 
 	const purse = deductCoins(buyer, normalizePrice(price));
@@ -332,7 +322,7 @@ async function requestPurchase(merchant, item) {
 	if (!buyer) return void ui.notifications?.warn(l("MERCHANT.NO_BUYER"));
 	if (getStock(item) <= 0) return void ui.notifications?.warn(l("MERCHANT.OUT_OF_STOCK"));
 
-	const price = getItemPrice(item);
+	const price = getMerchantBuyPrice(item, merchant);
 	if (!price) return void ui.notifications?.warn(l("MERCHANT.NO_PRICE"));
 	if (getPurseCopper(buyer) < toCopper(price)) {
 		return void ui.notifications?.warn(l("MERCHANT.NOT_ENOUGH_COINS"));
@@ -397,6 +387,7 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 			height: 700,
 			resizable: true,
 			scrollY: [".merchant-goods .items"],
+			tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "goods" }],
 		});
 	}
 
@@ -408,8 +399,15 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 
 		const goods = this.actor.items.contents
 			.map((item) => {
+				// `price` is the raw, unmodified base price flag — the GM's editable inputs
+				// read and write this directly. `buyPrice` is what the storefront actually
+				// shows and charges, biased by this merchant's sellModifier; the two diverge
+				// only once a modifier is set, and must stay in sync with performPurchase's
+				// own getMerchantBuyPrice call so the display never promises a price the
+				// purchase doesn't honour.
 				const price = normalizePrice(getItemPrice(item) || {});
-				const priceCopper = toCopper(price);
+				const buyPrice = normalizePrice(getMerchantBuyPrice(item, this.actor) || {});
+				const buyPriceCopper = toCopper(buyPrice);
 				const stock = getStock(item);
 				return {
 					id: item.id,
@@ -420,15 +418,34 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 					stock,
 					soldOut: stock <= 0,
 					price,
-					priceLabel: priceCopper > 0 ? formatPrice(price) : "—",
+					priceLabel: buyPriceCopper > 0 ? formatPrice(buyPrice) : "—",
 					// Blocked covers every reason the button cannot act, so the template
 					// stays declarative and activateListeners has a single source of truth.
-					blocked: stock <= 0 || priceCopper <= 0 || !buyer || buyerCopper < priceCopper,
+					blocked: stock <= 0 || buyPriceCopper <= 0 || !buyer || buyerCopper < buyPriceCopper,
 				};
 			})
 			// Sold-out rows stay visible to the GM (to restock) but vanish for players.
 			.filter((entry) => isGM || !entry.soldOut)
 			.sort((a, b) => a.name.localeCompare(b.name));
+
+		const repairEnabled = !!this.actor.system?.repairEnabled;
+
+		const sellLines = buyer ? resolveSellCartLines(buyer, this.actor, { includeUnavailable: true }) : [];
+		const sellPending = buyer ? isSellPending(buyer, this.actor.id) : false;
+		const sellTotal = sellLines.reduce((sum, line) => sum + (line.unavailable ? 0 : toCopper(line.price) * line.qty), 0);
+
+		const repairLines = repairEnabled && buyer
+			? resolveRepairCartLines(buyer, this.actor, { includeUnavailable: true })
+			: [];
+		const repairTotal = repairLines.reduce((sum, line) => sum + (line.unavailable ? 0 : line.costCopper), 0);
+
+		const pendingSellRequests = isGM
+			? findPendingSellRequests(this.actor).map((request) => ({
+					sellerId: request.seller.id,
+					sellerName: request.seller.name,
+					itemCount: request.itemCount,
+				}))
+			: [];
 
 		return foundry.utils.mergeObject(context, {
 			isGM,
@@ -437,6 +454,18 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 			buyerName: buyer?.name ?? null,
 			buyerPurse: buyer ? formatPrice(fromPurse(buyer)) : null,
 			description: this.actor.system?.description ?? "",
+			repairEnabled,
+			sellModifier: this.actor.system?.sellModifier ?? 0,
+			buyModifier: this.actor.system?.buyModifier ?? 0,
+			sellLines,
+			hasSellLines: sellLines.length > 0,
+			sellPending,
+			sellTotalLabel: formatPrice(fromCopper(sellTotal)),
+			repairLines,
+			hasRepairLines: repairLines.length > 0,
+			repairTotalLabel: formatPrice(fromCopper(repairTotal)),
+			pendingSellRequests,
+			hasPendingSellRequests: pendingSellRequests.length > 0,
 		});
 	}
 
@@ -454,6 +483,21 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 			event.preventDefault();
 			const item = this._itemFromEvent(event);
 			if (item) void requestPurchase(this.actor, item);
+		});
+
+		// Sell/Repair tabs act on the acting player's own character, not the merchant, so
+		// they're wired for everyone (including a GM playing a secondary character) rather
+		// than gated behind the GM-only block below.
+		this._activateSellListeners(html);
+		this._activateRepairListeners(html);
+
+		// Cosmetic highlight only — the drop itself already works via the inherited AppV1
+		// dragDrop config (dragover is globally preventDefault-ed), this just shows where.
+		html.find(".merchant-dropzone").on("dragenter", (event) => {
+			event.currentTarget.classList.add("dragover");
+		});
+		html.find(".merchant-dropzone").on("dragleave drop", (event) => {
+			event.currentTarget.classList.remove("dragover");
 		});
 
 		if (!game.user.isGM) return;
@@ -502,6 +546,101 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 			price[part] = Math.max(0, Math.round(Number(event.currentTarget.value) || 0));
 			void item.setFlag(MODULE_ID, PRICE_FLAG, price);
 		});
+
+		html.find("button.merchant-settings-open").on("click", (event) => {
+			event.preventDefault();
+			new MerchantSettingsApp({ merchant: this.actor }).render(true);
+		});
+
+		html.find("button.merchant-sell-review").on("click", (event) => {
+			event.preventDefault();
+			const sellerId = event.currentTarget.closest("[data-seller-id]")?.dataset?.sellerId;
+			const seller = sellerId ? game.actors.get(sellerId) : null;
+			if (seller) reviewSellRequest(this.actor, seller);
+		});
+	}
+
+	/** Sell tab: everyone acts on their own resolved character's cart, never the merchant. */
+	_activateSellListeners(html) {
+		html.find("button.merchant-sell-clear").on("click", async (event) => {
+			event.preventDefault();
+			const seller = resolveBuyer();
+			if (seller) await clearSellCart(seller, this.actor);
+		});
+
+		html.find("button.merchant-sell-submit").on("click", async (event) => {
+			event.preventDefault();
+			const seller = resolveBuyer();
+			if (seller) await submitSellCart(this.actor, seller);
+		});
+
+		html.find("input.qty-input").on("change", async (event) => {
+			const seller = resolveBuyer();
+			const itemId = event.currentTarget.closest("[data-item-id]")?.dataset?.itemId;
+			if (!seller || !itemId) return;
+			await setSellCartQty(seller, this.actor, itemId, event.currentTarget.value);
+		});
+
+		html.find(".sell-cart-remove").on("click", async (event) => {
+			event.preventDefault();
+			const seller = resolveBuyer();
+			const itemId = event.currentTarget.closest("[data-item-id]")?.dataset?.itemId;
+			if (seller && itemId) await removeFromSellCart(seller, this.actor, itemId);
+		});
+	}
+
+	/** Repair tab: same acting-character rule as Sell, only rendered when repairEnabled. */
+	_activateRepairListeners(html) {
+		html.find("button.merchant-repair-confirm").on("click", async (event) => {
+			event.preventDefault();
+			const repairer = resolveBuyer();
+			if (!repairer) return void ui.notifications?.warn(l("MERCHANT.NO_ACTIVE_CHARACTER"));
+			const result = await performRepair(this.actor, repairer);
+			if (!result.ok) ui.notifications?.warn(l(result.reason));
+		});
+
+		html.find(".repair-cart-remove").on("click", async (event) => {
+			event.preventDefault();
+			const repairer = resolveBuyer();
+			const itemId = event.currentTarget.closest("[data-item-id]")?.dataset?.itemId;
+			if (repairer && itemId) await removeFromRepairCart(repairer, this.actor, itemId);
+		});
+	}
+
+	/**
+	 * Sell/Repair drop zones bypass the inherited AppV1 `_onDropItem`, which requires
+	 * `this.actor.isOwner` on the MERCHANT — a permission players never have (default
+	 * Observer). These drops never touch the merchant document at all: they add a
+	 * reference into the dropping player's own private cart. Any other drop target (the
+	 * Goods tab) falls through unchanged to the inherited GM-stocking behavior.
+	 */
+	async _onDrop(event) {
+		const zone = event.target?.closest?.(".merchant-sell-drop, .merchant-repair-drop");
+		if (!zone) return super._onDrop(event);
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		let data;
+		try {
+			data = JSON.parse(event.dataTransfer.getData("text/plain"));
+		} catch (err) {
+			return;
+		}
+		if (data?.type !== "Item") return;
+
+		const item = await fromUuid(data.uuid);
+		const actor = resolveBuyer();
+		if (!item || !actor || item.parent?.id !== actor.id) {
+			return void ui.notifications?.warn(l("MERCHANT.NO_ACTIVE_CHARACTER"));
+		}
+
+		if (zone.classList.contains("merchant-sell-drop")) {
+			await addToSellCart(actor, this.actor, item);
+		} else {
+			await addToRepairCart(actor, this.actor, item);
+		}
+		this.render();
 	}
 
 	_itemFromEvent(event) {
@@ -595,6 +734,22 @@ function registerMerchantHooks() {
 		}
 		actor.updateSource(updates);
 	});
+
+	// The Sell/Repair tabs render the acting user's OWN character's cart flags, not the
+	// merchant's — so AppV1's built-in "re-render when `this.object` changes" behavior
+	// (which is what already keeps the Goods tab in sync) never fires for them. A sell
+	// accept/reject mutates the seller's actor from the GM's client; this is what lets the
+	// seller's own open sheet unlock without a manual reload once the GM decides, and lets
+	// a player's own cart edits refresh their own view. Cheap and rare enough to leave
+	// unguarded beyond the flag-namespace check.
+	Hooks.on("updateActor", (actor, changes) => {
+		const tradeFlags = changes.flags?.[MODULE_ID];
+		if (!tradeFlags) return;
+		if (!("sellCart" in tradeFlags || "sellPending" in tradeFlags || "repairCart" in tradeFlags)) return;
+		for (const app of Object.values(ui.windows)) {
+			if (app instanceof FblMerchantSheet) app.render(false);
+		}
+	});
 }
 
 Hooks.once("init", () => {
@@ -641,5 +796,6 @@ async function repairMerchantImages() {
 
 Hooks.once("ready", () => {
 	registerMerchantSocket();
+	registerMerchantTradeSocket();
 	if (isActiveGM()) void repairMerchantImages();
 });
