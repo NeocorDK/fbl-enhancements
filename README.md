@@ -6,7 +6,7 @@ Keep all custom automation in a separate add-on module so it can be enabled or d
 
 ## Compatibility
 
-This is the **Foundry VTT V14** line of the module (`14.x`), maintained on the `v14` branch.
+This is the **Foundry VTT V14** line of the module (`0.14.x`), maintained on the `v14` branch.
 It requires the Forbidden Lands system **14.0.0 or newer** and will not install on Foundry V13.
 
 For Foundry V13 + Forbidden Lands 13.x, use the `main` branch (`0.4.x`) instead.
