@@ -34,6 +34,11 @@
 }
 
 .forbidden-lands .fbl-enh-price-cell input {
+	/* Without an explicit `flex-grow`, a flex child sizes to its content/intrinsic width
+	   — here that's the system's own narrow default for `input[type=number]`, so the
+	   field collapsed to a sliver next to its ЗМ/СМ/ММ unit label instead of filling the
+	   grid cell `min-width: 0` was meant to let it expand into. */
+	flex: 1 1 0;
 	min-width: 0;
 	text-align: right;
 }
