@@ -745,6 +745,11 @@
 	flex: 0 0 auto;
 	width: 4.5em;
 	text-align: right;
+	/* The universal `.fbl-merchant-settings * { color: #191813 !important }` rule forces
+	   dark ink on this input's TEXT, but never touches its background — left at core's
+	   own default (dark, in the dark theme), the digits sit dark-on-dark and disappear. */
+	background: #fff !important;
+	border: 1px solid rgba(0, 0, 0, 0.35);
 }
 
 /*
