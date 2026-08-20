@@ -485,7 +485,12 @@ class MerchantSellReviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	}
 
 	static DEFAULT_OPTIONS = {
-		classes: ["fbl-merchant-sell-review", "forbidden-lands"],
+		// Deliberately NOT "forbidden-lands": that class ties .window-header/.app
+		// background and text color to the system's --color-theme-* variables, which
+		// are scoped for actor/item sheets and resolve unpredictably on a bare dialog
+		// (a black-on-black header, invisible buttons). fbl-merchant.css gives this
+		// dialog its own fully literal chrome instead.
+		classes: ["fbl-merchant-sell-review"],
 		position: { width: 480, height: "auto" },
 		window: {
 			title: "FBL_ENHANCEMENTS.MERCHANT.REVIEW.TITLE",
@@ -587,7 +592,10 @@ export class MerchantSettingsApp extends HandlebarsApplicationMixin(ApplicationV
 
 	static DEFAULT_OPTIONS = {
 		tag: "form",
-		classes: ["fbl-merchant-settings", "forbidden-lands", "standard-form"],
+		// Deliberately NOT "forbidden-lands" — see the identical note on
+		// MerchantSellReviewApp above; "standard-form" alone gives core's own
+		// (reliably legible) form chrome, which fbl-merchant.css then themes explicitly.
+		classes: ["fbl-merchant-settings", "standard-form"],
 		position: { width: 420, height: "auto" },
 		window: {
 			title: "FBL_ENHANCEMENTS.MERCHANT.SETTINGS.TITLE",

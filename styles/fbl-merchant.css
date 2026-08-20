@@ -625,8 +625,31 @@
  *
  * A plain ApplicationV2 window, not the AppV1 <form> the sheet's own dark-ink rules above
  * are scoped to — so it needs its own (identical) treatment, applied bluntly to every
- * descendant of the body template's own .fbl-merchant root.
+ * descendant of the body template's own .fbl-merchant root. Deliberately does NOT carry
+ * the "forbidden-lands" class (see the comment in merchant-trade.js): that class ties the
+ * window chrome to --color-theme-* variables which resolve unpredictably outside an
+ * actor/item sheet — a dark-on-dark header, an invisible close icon — so every part of
+ * the window's own chrome (header, content background) gets a literal color here too,
+ * not just the template's own content.
  */
+
+.fbl-merchant-sell-review .window-header {
+	background: #2b2620;
+}
+
+.fbl-merchant-sell-review .window-header .window-title,
+.fbl-merchant-sell-review .window-header button.header-control,
+.fbl-merchant-sell-review .window-header i {
+	color: #e8e0cd;
+}
+
+.fbl-merchant-sell-review .window-header button.header-control:hover {
+	color: #fff;
+}
+
+.fbl-merchant-sell-review .window-content {
+	background: #e8e0cd;
+}
 
 .fbl-merchant-sell-review .fbl-merchant,
 .fbl-merchant-sell-review .fbl-merchant * {
@@ -673,7 +696,53 @@
 	cursor: not-allowed;
 }
 
-/* --- Per-merchant settings dialog (standard-form, like the price-migration dialog) --- */
+/* --- Per-merchant settings dialog ---
+ *
+ * Same literal-chrome treatment as the sale-review dialog above (see that block's
+ * comment): no "forbidden-lands" class, so the header and the Save button both need an
+ * explicit color here or they inherit core's own --color-theme-* fallback resolution,
+ * which is what made the header icons and the Save button unreadable.
+ */
+
+.fbl-merchant-settings .window-header {
+	background: #2b2620;
+}
+
+.fbl-merchant-settings .window-header .window-title,
+.fbl-merchant-settings .window-header button.header-control,
+.fbl-merchant-settings .window-header i {
+	color: #e8e0cd;
+}
+
+.fbl-merchant-settings .window-header button.header-control:hover {
+	color: #fff;
+}
+
+.fbl-merchant-settings .window-content {
+	background: #e8e0cd;
+	color: #191813;
+}
+
+.fbl-merchant-settings .window-content label,
+.fbl-merchant-settings .window-content p,
+.fbl-merchant-settings .window-content .hint,
+.fbl-merchant-settings .window-content span {
+	color: #191813;
+}
+
+.fbl-merchant-settings .window-content button {
+	padding: 4px 12px;
+	background: #e8e0cd;
+	color: #191813;
+	text-shadow: none;
+	border: 2px solid #1114;
+	box-shadow: inset 0 0 0 1px #fff6;
+	cursor: pointer;
+}
+
+.fbl-merchant-settings .window-content button:hover:not(:disabled) {
+	border-color: #a00404;
+}
 
 .fbl-merchant-settings .modifier-pair {
 	display: flex;
