@@ -7,8 +7,8 @@ Keep all custom automation in a separate add-on module so it can be enabled or d
 ## Install (manifest)
 Use this manifest URL in Foundry:
 
-`https://raw.githubusercontent.com/NeocorDK/fbl-enhancements/main/module.json`
-
+FoundryVTT V13: `https://raw.githubusercontent.com/NeocorDK/fbl-enhancements/main/module.json`
+FoundryVTT V14: `https://raw.githubusercontent.com/NeocorDK/fbl-enhancements/v14/module.json`
 ## What this module adds
 
 ### 1. Combat automation buttons in attack chat cards
