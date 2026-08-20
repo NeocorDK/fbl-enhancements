@@ -617,6 +617,19 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 	}
 
 	/**
+	 * Core `DragDrop` checks this BEFORE a drop ever reaches `_onDrop` at all — the
+	 * inherited implementation gates it on `this.isEditable`, which resolves false for
+	 * every player (default Observer on a merchant), so drops onto the Sell/Repair zones
+	 * silently did nothing: `_onDrop` below was never even called. Sell/Repair never
+	 * touch the merchant document (only the dropping player's own actor), and the Goods
+	 * tab's own `_onDropItem` re-checks `this.actor.isOwner` regardless — so it's safe to
+	 * always allow the drop attempt through and let `_onDrop` decide.
+	 */
+	_canDragDrop() {
+		return true;
+	}
+
+	/**
 	 * Sell/Repair drop zones bypass the inherited AppV1 `_onDropItem`, which requires
 	 * `this.actor.isOwner` on the MERCHANT — a permission players never have (default
 	 * Observer). These drops never touch the merchant document at all: they add a
