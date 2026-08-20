@@ -767,17 +767,21 @@ function registerMerchantHooks() {
 		actor.updateSource(updates);
 	});
 
-	// The Sell/Repair tabs render the acting user's OWN character's cart flags, not the
-	// merchant's — so AppV1's built-in "re-render when `this.object` changes" behavior
-	// (which is what already keeps the Goods tab in sync) never fires for them. A sell
-	// accept/reject mutates the seller's actor from the GM's client; this is what lets the
-	// seller's own open sheet unlock without a manual reload once the GM decides, and lets
-	// a player's own cart edits refresh their own view. Cheap and rare enough to leave
-	// unguarded beyond the flag-namespace check.
+	// The Sell/Repair tabs (and the Goods tab's affordability check) render the acting
+	// user's OWN character's cart flags and purse — not the merchant's — so AppV1's
+	// built-in "re-render when `this.object` changes" behavior (which is what already
+	// keeps the Goods tab's stock in sync) never fires for either. A sell accept/reject
+	// mutates the seller's actor from the GM's client (unlocking the seller's own open
+	// sheet without a manual reload); editing a character's coin purse directly on their
+	// own sheet — not through a purchase — previously left every open merchant window
+	// showing a stale "not enough coins" block until manually reopened. Both are cheap,
+	// rare enough events to leave unguarded beyond the flag/currency check.
 	Hooks.on("updateActor", (actor, changes) => {
 		const tradeFlags = changes.flags?.[MODULE_ID];
-		if (!tradeFlags) return;
-		if (!("sellCart" in tradeFlags || "sellPending" in tradeFlags || "repairCart" in tradeFlags)) return;
+		const touchesTrade =
+			tradeFlags && ("sellCart" in tradeFlags || "sellPending" in tradeFlags || "repairCart" in tradeFlags);
+		const touchesCurrency = !!changes.system?.currency;
+		if (!touchesTrade && !touchesCurrency) return;
 		for (const app of Object.values(ui.windows)) {
 			if (app instanceof FblMerchantSheet) app.render(false);
 		}
