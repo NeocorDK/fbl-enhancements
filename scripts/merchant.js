@@ -391,6 +391,20 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 		});
 	}
 
+	/** GM-only "Merchant Settings" button, alongside the window's own Configure/Sheet/Ownership controls. */
+	_getHeaderButtons() {
+		const buttons = super._getHeaderButtons();
+		if (game.user.isGM) {
+			buttons.unshift({
+				label: l("MERCHANT.SETTINGS.MENU_BUTTON"),
+				class: "merchant-settings-open",
+				icon: "fas fa-coins",
+				onclick: () => new MerchantSettingsApp({ merchant: this.actor }).render(true),
+			});
+		}
+		return buttons;
+	}
+
 	async getData(options) {
 		const context = await super.getData(options);
 		const isGM = game.user.isGM;
@@ -545,11 +559,6 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 			const price = normalizePrice(getItemPrice(item) || {});
 			price[part] = Math.max(0, Math.round(Number(event.currentTarget.value) || 0));
 			void item.setFlag(MODULE_ID, PRICE_FLAG, price);
-		});
-
-		html.find("button.merchant-settings-open").on("click", (event) => {
-			event.preventDefault();
-			new MerchantSettingsApp({ merchant: this.actor }).render(true);
 		});
 
 		html.find("button.merchant-sell-review").on("click", (event) => {

@@ -415,7 +415,12 @@
 
 .fbl-merchant .sheet-tabs {
 	gap: 4px;
-	padding: 0 4px;
+	padding: 4px 4px 0;
+	/* Literal parchment tone, not a theme var: this nav sits outside the system's own
+	   themed chrome (same reasoning as the dark-ink block above), so without an explicit
+	   background it inherits Foundry core's default dark tab-bar styling — unreadable
+	   against the dark ink text this sheet insists on everywhere else. */
+	background: #e8e0cd;
 	border-bottom: 2px solid var(--color-border, #1114);
 }
 
@@ -446,7 +451,19 @@
 	flex: 1;
 }
 
+/*
+ * Scoped to `.active` only: core Foundry already hides inactive `.tab` sections via a
+ * `display: none` rule, but this selector's extra specificity (`.fbl-merchant .sheet-body
+ * .tab`) would otherwise beat core's and force EVERY tab to `display: flex` at once —
+ * stacking Goods, Sell, and Repair on top of each other and wrecking every proportion
+ * (a too-short goods table, a too-tall description, huge dead space below). The explicit
+ * `display: none` on the inactive state is redundant with core but kept for safety.
+ */
 .fbl-merchant .sheet-body .tab {
+	display: none;
+}
+
+.fbl-merchant .sheet-body .tab.active {
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
