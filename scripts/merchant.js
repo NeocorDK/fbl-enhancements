@@ -571,6 +571,13 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 
 	/** Sell tab: everyone acts on their own resolved character's cart, never the merchant. */
 	_activateSellListeners(html) {
+		// Same FormApplication._disableFields() workaround as the Buy button above: these
+		// controls act on the player's OWN actor, never the merchant, so they must stay
+		// enabled even though the player is only an Observer (not Owner) on the merchant.
+		html.find("button.merchant-sell-clear, button.merchant-sell-submit, .sell-cart-remove")
+			.prop("disabled", false);
+		html.find("input.qty-input").prop("disabled", false);
+
 		html.find("button.merchant-sell-clear").on("click", async (event) => {
 			event.preventDefault();
 			const seller = resolveBuyer();
@@ -600,6 +607,9 @@ class FblMerchantSheet extends foundry.appv1.sheets.ActorSheet {
 
 	/** Repair tab: same acting-character rule as Sell, only rendered when repairEnabled. */
 	_activateRepairListeners(html) {
+		// Same FormApplication._disableFields() workaround as the Sell tab above.
+		html.find("button.merchant-repair-confirm, .repair-cart-remove").prop("disabled", false);
+
 		html.find("button.merchant-repair-confirm").on("click", async (event) => {
 			event.preventDefault();
 			const repairer = resolveBuyer();
