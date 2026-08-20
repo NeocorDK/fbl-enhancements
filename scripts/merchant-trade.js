@@ -482,6 +482,8 @@ class MerchantSellReviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.requestId = requestId;
 		/** Populated once from the live cart, then mutated in place by GM edits. */
 		this.lines = null;
+		/** Set by the accept/reject actions so `close()` doesn't also auto-reject them. */
+		this._resolved = false;
 	}
 
 	static DEFAULT_OPTIONS = {
@@ -508,6 +510,7 @@ class MerchantSellReviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
 					requestId: this.requestId,
 				});
 				if (!result.ok) return void ui.notifications?.warn(l(result.reason));
+				this._resolved = true;
 				await this.close();
 			},
 			reject: async function () {
@@ -517,6 +520,7 @@ class MerchantSellReviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
 					sellerUserId: this.sellerUserId,
 					requestId: this.requestId,
 				});
+				this._resolved = true;
 				await this.close();
 			},
 			removeLine: function (event, target) {
@@ -574,8 +578,27 @@ class MerchantSellReviewApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		});
 	}
 
+	/**
+	 * Closing this window any other way than Accept/Reject (the X button, Escape, the
+	 * GM navigating away) must not leave the seller stuck showing "awaiting the GM's
+	 * decision" forever — treat it as a Reject. `_resolved` is set first so the explicit
+	 * accept/reject actions' own `this.close()` call doesn't run this a second time.
+	 */
 	async close(options) {
 		openReviewApps.delete(reviewKey(this.merchant, this.seller));
+		if (!this._resolved) {
+			this._resolved = true;
+			try {
+				await performSellReject({
+					merchant: this.merchant,
+					seller: this.seller,
+					sellerUserId: this.sellerUserId,
+					requestId: this.requestId,
+				});
+			} catch (err) {
+				console.error(`${MODULE_ID} | merchant: failed to auto-reject on close`, err);
+			}
+		}
 		return super.close(options);
 	}
 }
