@@ -7,6 +7,10 @@
 	word-break: break-word;
 }
 
+.chat-message .message-content .dice-roll .mishap-no-table {
+	text-align: center;
+}
+
 .chat-message .message-content .dice-roll .dice-buttons.fbl-enh-attack-buttons {
 	display: grid;
 	grid-template-columns: 1fr;

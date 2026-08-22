@@ -514,27 +514,39 @@ async function tryRunRollOnTable(tableName) {
 			await globalThis.rollOnTable(tableName);
 			return true;
 		}
-	} catch (_error) {}
+	} catch (err) {
+		console.warn(`${MODULE_ID} | tryRunRollOnTable: global rollOnTable() failed for "${tableName}"`, err);
+	}
 
 	const macro = game.macros?.getName("rollOnTable");
 	if (macro) {
 		try {
 			await macro.execute(tableName);
 			return true;
-		} catch (_error) {
+		} catch (err) {
 			try {
 				await macro.execute({ table: tableName, tableName });
 				return true;
-			} catch (_error2) {}
+			} catch (err2) {
+				console.warn(
+					`${MODULE_ID} | tryRunRollOnTable: macro "rollOnTable" failed for "${tableName}"`,
+					err,
+					err2,
+				);
+			}
 		}
 	}
 
 	try {
 		const table = game.tables?.getName(tableName);
-		if (!table) return false;
+		if (!table) {
+			console.warn(`${MODULE_ID} | tryRunRollOnTable: no table named "${tableName}" found`);
+			return false;
+		}
 		await table.draw({ displayChat: true });
 		return true;
-	} catch (_error) {
+	} catch (err) {
+		console.warn(`${MODULE_ID} | tryRunRollOnTable: table.draw() failed for "${tableName}"`, err);
 		return false;
 	}
 }
@@ -631,6 +643,11 @@ function getDefenseSourceRoll(roll, defenseType) {
 		};
 	if (defenseType === "dodge" || defenseType === "parry")
 		return { success: Number(roll.successCount || 0), failure: 0 };
+	// "flee" (and anything else) is unreachable here: the attack card only ever offers
+	// defense-dodge/defense-parry/defense-armor buttons (see roll.hbs), so
+	// rollTargetDefense() never stamps linkedDefenseType: "flee" onto a message. "flee"
+	// appears in DEFENSE_ACTION_NAMES only to exempt a sheet-triggered flee roll from the
+	// attack-dialog injection in rollActionPatched — it never reaches this function.
 	return null;
 }
 
@@ -1385,8 +1402,12 @@ function registerRollDialogHook() {
 
 		// Keep app.options.damageType in sync with the selector so that the
 		// patched getRollOptions() below picks up the user's choice on submit.
+		// Guarded like every other listener-binder in this file: the dialog can re-render
+		// more than once per session (e.g. toggling a modifier checkbox), and without this
+		// guard each render would stack another "change" listener on the same <select>.
 		const selectEl = root.querySelector?.("#damageType");
-		if (selectEl) {
+		if (selectEl && selectEl.dataset.fblEnhDamageTypeBound !== "1") {
+			selectEl.dataset.fblEnhDamageTypeBound = "1";
 			selectEl.addEventListener("change", () => {
 				app.options.damageType = selectEl.value;
 			});
