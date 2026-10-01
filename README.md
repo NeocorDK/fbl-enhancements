@@ -204,6 +204,55 @@ Supply fields are never modified.**
   item already exists takes effect immediately. Picking a rarity from the dropdown instead
   overrides the text and is not overwritten by later migrations.
 
+### 16. Stronghold automation
+The stronghold rules of the Player's Handbook (chapter 8), automated on top of the system's own
+`stronghold` actor and its `building` / `hireling` items. Nothing in the system is modified: every
+setting the module needs is stored in its own flags. The stronghold sheet itself gains the controls.
+
+- **Time-driven.** Whenever in-game time advances (see the calendar), the active GM's client plays
+  out every elapsed Quarter Day — production, wages, spoilage, livestock, reminders — and applies
+  the result in one batch, followed by one summary card. Rewinding the clock never repeats or
+  reverts anything. A jump of more than four days asks the GM whether to *simulate* it, *skip* it
+  silently, or *cancel* it.
+- **Identification by role, not by name.** A building, hireling, resource or animal is recognised
+  by its name in any of the five supported languages ("Bakery", "Пекарня", "Bäckerei", …). The
+  building and hireling item sheets have a *Stronghold role* dropdown to override the guess.
+  Missing resources are created automatically (from a world item or compendium of the same name,
+  otherwise as a plain raw material with its book price).
+- **Production.** Mark a building *On* in the stronghold's Buildings tab. Converters (Bakery, Forge,
+  Mill, Inn, Tailor Shop, Tannery) turn up to 12 units per copy per working Quarter Day into the
+  product; the Quarry and the Mine yield 2 units per worker (up to 12 workers per copy). A worker
+  is a hireling of the matching role, or a PC marked as working there. The *Output* field caps a
+  building's yield. The Field yields 300 grain on Harvest Day, the Garden gives Vegetables and
+  Herbs weekly in Spring and Summer (split between them as you like).
+- **Overtime.** A hireling on overtime works the third Quarter Day (Evening) and is paid double.
+  Buildings work the Evening with as many copies as they have overtime staff.
+- **Hirelings working outside.** Hunters (1 Meat + 1 Pelt) and Lumberjacks (2 Wood) produce every
+  working Quarter Day while marked as *deployed*.
+- **Wages and treasury.** Each stronghold has a treasury (gold / silver / copper) that characters
+  fund with *Deposit* and take from with *Withdraw*; players' transfers are relayed through the GM.
+  Hirelings are paid once a day from the treasury (every morning, or at the first working Quarter
+  Day if they have not been paid yet) at the salary written on the hireling item, or the book rate
+  when it is empty. A hireling the treasury cannot pay is flagged, **does not work (or guard)** until
+  paid, and the Non-Payment table is posted, again each week until paid.
+- **Livestock.** Cows give 1 Food each per morning, and every animal herd gives birth on the Day of
+  Awakening (cows only with a bull). Slaughter and shearing are buttons on the pen's row (a flock
+  can be sheared twice a year).
+- **Food spoilage.** Goods spoil after the shelf life in the handbook (Meat, Vegetables, Fish: one
+  day; Bread, Pelts, Herbs: one week; Wool, Grain, Flour: one month); a Root Cellar makes Grain,
+  Flour, Meat and Vegetables last ten times longer. Optionally warns beforehand.
+- **Defense Rating.** Calculated automatically: +1 when PCs take part, +1 per ten guards (max +5),
+  −1 when the guards are hungry, and +2 Ramparts / +1 Portcullis / +1 Guard Tower / +1 Moat. The
+  sheet shows the breakdown.
+- **Reputation.** The sheet lists the Reputation bonus of the stronghold's functions.
+- **Weekly reminders** (chat cards with the book's D6 tables): stronghold events (with a link to
+  your own roll table), upkeep when there is no Handyman, an unguarded stronghold, mine collapse
+  and hunter attacks. They are reminders only — the GM makes the rolls.
+- **Festival banners.** A banner appears for every player 10 days, 3 days and on the day of each
+  festival (calendar feature; setting *Festival banners*).
+- **Day / night.** The calendar shows a sun or moon icon for the current Quarter Day, following the
+  handbook's light-and-darkness table by season.
+
 ## Module settings
 The module adds world settings (checkboxes):
 - `Combat automation in chat`
@@ -215,6 +264,10 @@ The module adds world settings (checkboxes):
 - `Calendar visible to players`
 - `Calendar Setup` (menu) — configure phases, lunar cycle, starting year, and set the current date/time
 - `Price migration` (menu) — re-run the Cost/Supply → price/rarity migration
+- `Festival banners`
+- Stronghold: `Stronghold automation`, `Require staff`, `Stronghold chat report`, `Reports to GM only`,
+  `Weekly reminders`, `Stronghold events table`, `Food spoilage`, `Spoilage warning (days)`,
+  `Automatic Defense Rating`
 
 ## Disabling the module
 Merchant actors are a module sub-type. If the module is disabled, the world still loads, but
@@ -242,6 +295,9 @@ existing merchants appear as unknown-subtype placeholders until it is re-enabled
 - `scripts/economy.js` - price/rarity parsing, item sheet price fields, price migration
 - `scripts/merchant.js` - merchant actor type, sheet, stock rolls, purchases
 - `scripts/merchant-trade.js` - selling to a merchant, repairs, per-merchant price modifiers
+- `scripts/stronghold-data.js` - stronghold rule data (resources, buildings, hirelings, animals) and multilingual name matching
+- `scripts/stronghold.js` - stronghold engine: tick simulation, wages, spoilage, livestock, defense, treasury
+- `scripts/stronghold-sheet.js` - controls injected into the stronghold, building and hireling sheets
 - `templates/roll.hbs` - custom roll chat card template
 - `templates/dialog.hbs` - custom roll dialog template (with damage type selection)
 - `templates/calendar.hbs`, `templates/calendar-config.hbs` - calendar window and setup form
@@ -249,9 +305,11 @@ existing merchants appear as unknown-subtype placeholders until it is re-enabled
 - `templates/merchant-sell-review.hbs` - GM review window for a player's sell offer
 - `templates/merchant-settings.hbs` - per-merchant settings form (price modifiers, repair toggle)
 - `templates/price-migration.hbs` - price migration form
+- `templates/stronghold-card.hbs`, `templates/stronghold-reminder.hbs` - stronghold report and reminder chat cards
 - `styles/fbl-enhancements.css` - chat card/button styling
 - `styles/fbl-calendar.css` - calendar styling (Forbidden Lands theme)
 - `styles/fbl-merchant.css` - merchant sheet and item price field styling
+- `styles/fbl-stronghold.css` - stronghold sheet controls and chat cards
 - `lang/*.json` - localization files (en, ru, es, de, pt-BR). The calendar is fully translatable
   through these files — adding a language needs only a new JSON file and a `languages` entry in
   `module.json`, with no code changes.

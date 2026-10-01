@@ -382,3 +382,49 @@ body.theme-dark .fbl-calendar-config .fbl-cal-section {
 body.theme-dark .fbl-calendar-config .hint {
 	color: #cfcdc2;
 }
+
+/* --- Light / dark indicator --- */
+.fbl-calendar .fbl-cal-light.is-light {
+	color: #c58a00;
+}
+
+.fbl-calendar .fbl-cal-light.is-dark {
+	color: #4a5a8a;
+}
+
+/* --- Festival banner --- */
+.fbl-festival-banner {
+	position: fixed;
+	top: 90px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10000;
+	min-width: 320px;
+	max-width: 80vw;
+	padding: 14px 28px;
+	text-align: center;
+	background: var(--color-bg-dark, #1b1a17) center / cover;
+	color: #f1e7cf;
+	border: 2px solid #8a6d2b;
+	box-shadow: 0 4px 24px #000a;
+	pointer-events: none;
+	opacity: 1;
+	transition: opacity 1s ease;
+}
+
+.fbl-festival-banner.fading {
+	opacity: 0;
+}
+
+.fbl-festival-banner h2 {
+	margin: 0 0 4px;
+	font-family: var(--font-header-sc, serif);
+	font-size: var(--font-size-28, 28px);
+	color: #e8c76a;
+	border: none;
+}
+
+.fbl-festival-banner p {
+	margin: 0;
+	font-size: var(--font-size-16, 16px);
+}

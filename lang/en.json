@@ -177,6 +177,10 @@
         "VISIBLE": {
           "NAME": "Calendar visible to players",
           "HINT": "Allow players to open and view the calendar. The GM can always change the time; players only view it."
+        },
+        "BANNERS": {
+          "NAME": "Festival banners",
+          "HINT": "Show a banner to every player 10 days, 3 days and on the day of each festival."
         }
       },
       "PHASES": {
@@ -241,6 +245,266 @@
         "DATE_DAY": "Day of phase",
         "DATE_QUARTER": "Time of day",
         "SAVE": "Save"
+      },
+      "SEASONS": {
+        "WINTER": "Winter",
+        "SPRING": "Spring",
+        "SUMMER": "Summer",
+        "AUTUMN": "Autumn"
+      },
+      "LIGHT": {
+        "LIGHT": "Light",
+        "DARK": "Dark"
+      },
+      "BANNER": {
+        "TODAY": "Today is the festival.",
+        "TOMORROW": "Tomorrow is the festival.",
+        "IN_DAYS": "The festival is in {days} days."
+      }
+    },
+    "STRONGHOLD": {
+      "SETTINGS": {
+        "strongholdAutomation": {
+          "NAME": "Stronghold automation",
+          "HINT": "Simulate production, wages, spoilage, livestock and reminders for every stronghold whenever in-game time advances."
+        },
+        "strongholdRequireStaff": {
+          "NAME": "Require staff",
+          "HINT": "Buildings only produce when a matching hireling (or a PC marked as working there) is present. Off: buildings produce whenever they are switched on."
+        },
+        "strongholdChatMode": {
+          "NAME": "Stronghold chat report",
+          "HINT": "How production reports are posted to chat."
+        },
+        "strongholdChatGMOnly": {
+          "NAME": "Reports to GM only",
+          "HINT": "Whisper stronghold reports and reminders to the GM instead of posting them publicly."
+        },
+        "strongholdReminders": {
+          "NAME": "Weekly reminders",
+          "HINT": "Post weekly reminders: stronghold events, upkeep, unguarded stronghold, mine collapse and hunter attacks."
+        },
+        "strongholdEventTable": {
+          "NAME": "Stronghold events table",
+          "HINT": "UUID of a RollTable linked from the weekly events reminder (Gamemaster's Guide p.12). Leave empty for no link."
+        },
+        "strongholdSpoilage": {
+          "NAME": "Food spoilage",
+          "HINT": "Perishable goods in a stronghold spoil after their shelf life (ten times longer with a Root Cellar)."
+        },
+        "strongholdSpoilageWarnDays": {
+          "NAME": "Spoilage warning (days)",
+          "HINT": "Warn this many days before goods with a shelf life of a week or more spoil. 0 turns warnings off."
+        },
+        "autoDefenseRating": {
+          "NAME": "Automatic Defense Rating",
+          "HINT": "Calculate the stronghold's Defense Rating from its guards, defensive buildings and the situational flags."
+        },
+        "CHAT_MODE": {
+          "OFF": "Off",
+          "ADVANCE": "One summary per time advance",
+          "DAILY": "Daily digest"
+        }
+      },
+      "RESOURCES": {
+        "ironOre": "Iron Ore",
+        "iron": "Iron",
+        "stone": "Stone",
+        "wood": "Wood",
+        "glass": "Glass",
+        "leather": "Leather",
+        "cloth": "Cloth",
+        "tallow": "Tallow",
+        "wool": "Wool",
+        "grain": "Grain",
+        "flour": "Flour",
+        "meat": "Meat",
+        "vegetables": "Vegetables",
+        "fish": "Fish",
+        "pelt": "Pelt",
+        "bread": "Bread",
+        "herbs": "Herbs",
+        "food": "Food"
+      },
+      "ANIMALS": {
+        "cow": "Cow",
+        "pig": "Pig",
+        "sheep": "Sheep"
+      },
+      "BUILDINGS": {
+        "bakery": "Bakery",
+        "forge": "Forge",
+        "mill": "Mill",
+        "inn": "Inn",
+        "tailorShop": "Tailor Shop",
+        "tannery": "Tannery",
+        "quarry": "Quarry",
+        "mine": "Mine",
+        "field": "Field",
+        "garden": "Garden",
+        "pasture": "Pasture",
+        "pigsty": "Pigsty",
+        "sheepfold": "Sheepfold",
+        "rootCellar": "Root Cellar",
+        "ramparts": "Ramparts",
+        "portcullis": "Portcullis",
+        "guardTower": "Guard Tower",
+        "moat": "Moat",
+        "dovecote": "Dovecote",
+        "dungeon": "Dungeon",
+        "gallows": "Gallows",
+        "library": "Library",
+        "marketplace": "Marketplace",
+        "scriptorium": "Scriptorium",
+        "shrine": "Shrine"
+      },
+      "HIRELINGS": {
+        "baker": "Baker",
+        "bowyer": "Bowyer",
+        "carpenter": "Carpenter",
+        "executioner": "Executioner",
+        "farmer": "Farmer",
+        "guard": "Guard",
+        "handyman": "Handyman",
+        "hunter": "Hunter",
+        "innkeeper": "Innkeeper",
+        "jailer": "Jailer",
+        "lumberjack": "Lumberjack",
+        "masterBuilder": "Master Builder",
+        "miller": "Miller",
+        "miner": "Miner",
+        "quarryWorker": "Quarry Worker",
+        "smith": "Smith",
+        "tanner": "Tanner",
+        "tailor": "Tailor"
+      },
+      "DEFENSE": {
+        "PCS": "PCs take part in the defense",
+        "GUARDS": "Guards ({n})",
+        "HUNGRY": "Guards are hungry",
+        "NONE": "No Defense bonuses yet."
+      },
+      "CARD": {
+        "TITLE": "Stronghold report",
+        "DAILY_TITLE": "Daily report",
+        "PRODUCED": "Produced",
+        "CONSUMED": "Consumed",
+        "HARVEST": "Harvest",
+        "BIRTHS": "Births",
+        "SALARIES_PAID": "Salaries paid",
+        "UNPAID": "Could not be paid",
+        "SPOILED": "Spoiled",
+        "SOON": "Spoiling soon",
+        "SOON_LINE": "{n} {name} will spoil in {days} day(s).",
+        "BIRTH_LINE": "{n} {name} born ({formula}) — herd {head}/{cap}",
+        "NO_HARVEST": "{name} was not worked this year: no harvest.",
+        "SLAUGHTER": "Slaughter",
+        "SLAUGHTERED": "{n} {name} slaughtered.",
+        "SHEAR": "Shearing",
+        "SHEARED": "{n} sheep sheared."
+      },
+      "REMINDER": {
+        "NONPAY": {
+          "TITLE": "Non-payment",
+          "BODY": "The treasury could not pay these hirelings. Roll a D6 for each:"
+        },
+        "EVENTS": {
+          "TITLE": "Time to roll for events",
+          "BODY": "Word of the stronghold spreads. Reputation, a Gallows and unpaid hirelings can modify the roll. Roll only while the stronghold is guarded (Player's Handbook p.176)."
+        },
+        "UPKEEP": {
+          "TITLE": "Upkeep",
+          "BODY": "A week has passed without a Handyman. One PC must spend a Quarter Day on upkeep and roll CRAFTING; on a failure roll on the table:"
+        },
+        "UNGUARDED": {
+          "TITLE": "Unguarded stronghold",
+          "BODY": "No guards and no PCs are present. Roll on the table for this week:"
+        },
+        "MINE_COLLAPSE": {
+          "TITLE": "Tunnel collapse check",
+          "BODY": "A week of work has passed in the mine. Roll one Gear Die; a 1 means a collapse. Then roll a Gear Die for each worker: a 1 means that worker is trapped (an NPC dies)."
+        },
+        "HUNTER_ATTACK": {
+          "TITLE": "Hunter: wild beast attack",
+          "BODY": "A week of hunting has passed. Roll one Base Die per hunter; a 1 means a beast attacks. Roll again: another 1 means the hunter is killed."
+        }
+      },
+      "TABLE": {
+        "NONPAY": {
+          "1": "The hireling leaves and spreads rumors of your stinginess: add two dice to the next stronghold event roll.",
+          "2": "The hireling leaves and steals something valuable (GM decides).",
+          "3": "The hireling rallies all hirelings, and they all desert.",
+          "4": "The hireling stays but does no work until paid. Roll again if still unpaid after a week.",
+          "5": "The hireling keeps working but spreads rumors: Reputation counts as one step higher for the next event roll. Roll again weekly.",
+          "6": "The hireling keeps working without complaint. Roll again weekly."
+        },
+        "UPKEEP": {
+          "1": "Fire destroys D6 random functions. Roll a D6 per hireling; a 1 means that hireling dies.",
+          "2": "A random function is ruined and must be rebuilt.",
+          "3": "A hireling takes a critical injury (blunt trauma).",
+          "4": "Rats eat 2D6 Food.",
+          "5": "Leaky roof. In Winter or Fall everyone suffers cold. Repair takes a Quarter Day and a CRAFTING roll.",
+          "6": "Nothing happens."
+        },
+        "UNGUARDED": {
+          "1": "A prince or orc chieftain occupies it; all hirelings flee; 2D6 hostile soldiers hold it.",
+          "2": "Rival adventurers take it; the hirelings flee.",
+          "3": "Harpies nest, eat all Food, steal shiny things and chase off the hirelings. The stronghold must be cleared and cleaned again.",
+          "4": "A Gray Bear makes a den; the hirelings stay but avoid it.",
+          "5": "Wanderers make a mess and steal 2D6 Food.",
+          "6": "Nothing happens."
+        }
+      },
+      "JUMP": {
+        "TITLE": "Large time jump",
+        "BODY": "You are jumping {days} day(s) forward. How should the strongholds handle the gap?",
+        "HINT": "Simulate runs every Quarter Day (production, wages, spoilage, births, reminders). Skip moves the clock without changing anything. Cancel rolls the time back.",
+        "SIMULATE": "Simulate everything",
+        "SKIP": "Skip silently",
+        "CANCEL": "Cancel jump"
+      },
+      "TREASURY": {
+        "INVALID": "The transfer could not be completed.",
+        "DENIED": "You do not have permission for this transfer.",
+        "EMPTY": "Enter an amount.",
+        "NO_FUNDS": "Your character cannot afford that.",
+        "NO_TREASURY": "The treasury does not hold that much.",
+        "NO_GM": "A GM must be online to move treasury funds.",
+        "NO_CHARACTER": "Assign a character or select a single token first."
+      },
+      "SHEET": {
+        "NO_PERMISSION": "You do not have permission to change this stronghold.",
+        "CONFIRM": "Confirm",
+        "DEPOSIT": "Deposit",
+        "WITHDRAW": "Withdraw",
+        "TREASURY": "Treasury",
+        "WAGES_PER_DAY": "Wages per day",
+        "PCS_PRESENT": "PCs at the stronghold",
+        "GUARDS_HUNGRY": "Guards are hungry",
+        "COL_ACTIVE": "On",
+        "COL_OUTPUT": "Output",
+        "COL_STAFF": "Staff",
+        "COL_PC": "PC",
+        "COL_DEPLOY": "Out",
+        "COL_OVERTIME": "OT",
+        "ACTIVE": "Automate this building",
+        "TARGET": "Maximum output per working Quarter Day (up to {max})",
+        "BULL": "There is a bull",
+        "SHEAR": "Shear sheep ({n} ready)",
+        "SLAUGHTER": "Slaughter",
+        "PC_STAFFED": "A PC works here",
+        "DEPLOYED": "Working outside the stronghold",
+        "OVERTIME": "Overtime (third Quarter Day, double wages)",
+        "UNPAID": "Not paid",
+        "REPUTATION": "Reputation bonus",
+        "HOW_MANY": "How many?",
+        "SHEAR_TITLE": "Shearing",
+        "ROLE": "Stronghold role",
+        "ROLE_AUTO": "Automatic: {name}",
+        "ROLE_NONE": "not recognized"
+      },
+      "ERROR": {
+        "TICK": "Stronghold automation failed for {name}. See the browser console (F12) for details."
       }
     }
   }

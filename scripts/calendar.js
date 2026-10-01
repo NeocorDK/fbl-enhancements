@@ -22,10 +22,12 @@ const SETTING_VISIBLE = "calendarVisibleToPlayers";
 const SETTING_GRANULARITY = "calendarGranularity";
 const SETTING_CONFIG = "calendarConfig";
 const SETTING_COMPACT = "calendarCompactView";
+const SETTING_BANNERS = "festivalBanners";
 
 const l = (key) => game.i18n.localize(`FBL_ENHANCEMENTS.${key}`);
 
 const SECONDS_PER_DAY = 86400;
+const QUARTER_SECONDS = 21600; // one day-quarter (6h)
 const SYNODIC_PERIOD = 29.530588; // mean synodic month in days
 
 /** Forward/back step sizes (seconds) for the granularity selector. */
@@ -58,6 +60,23 @@ const DAY_QUARTERS = [
 	{ key: "QUARTERS.DAY", start: 12 },
 	{ key: "QUARTERS.EVENING", start: 18 },
 ];
+
+/** Season of each phase (index into DEFAULT_PHASES). */
+const SEASON_BY_PHASE = ["winter", "spring", "spring", "summer", "summer", "autumn", "autumn", "winter"];
+
+/**
+ * Light/dark by season and day-quarter (Player's Handbook p.147).
+ * Array index = dayQuarterIndex: 0 Night, 1 Morning, 2 Day, 3 Evening.
+ */
+const LIGHT_TABLE = {
+	spring: [false, true, true, false],
+	summer: [false, true, true, true],
+	autumn: [false, true, true, false],
+	winter: [false, false, true, false],
+};
+
+/** Days (0 on the holiday itself) until the next phase-opening holiday. */
+const FESTIVAL_THRESHOLDS = [10, 3, 0];
 
 /** Eight named moon phases, ordered from new moon. */
 const MOON_PHASES = [
@@ -184,6 +203,26 @@ function dateToWorldTime(date, config = getConfig()) {
 	return dayIndex * SECONDS_PER_DAY + (date.secondsOfDay || 0);
 }
 
+/** Season key ("winter" | "spring" | "summer" | "autumn") for a phase index. */
+function getSeason(phaseIndex) {
+	return SEASON_BY_PHASE[phaseIndex] ?? "spring";
+}
+
+/** True when the day-quarter described by `date` is light (see LIGHT_TABLE). */
+function isLight(date) {
+	return !!LIGHT_TABLE[getSeason(date.phaseIndex)]?.[date.dayQuarterIndex];
+}
+
+/** Days until the next holiday (0 when `date` is itself a holiday). */
+function daysUntilNextHoliday(date) {
+	return date.isHoliday ? 0 : date.phaseLength - date.dayInPhase;
+}
+
+/** Index of the phase whose holiday is the next one (or today's, on a holiday). */
+function upcomingHolidayPhase(date) {
+	return date.isHoliday ? date.phaseIndex : (date.phaseIndex + 1) % DEFAULT_PHASES.length;
+}
+
 /** Moon phase for a given (possibly fractional) day index. */
 function getMoonPhase(dayIndex, config = getConfig()) {
 	const age = mod(dayIndex - config.lunarEpochDay, SYNODIC_PERIOD);
@@ -246,6 +285,15 @@ function registerCalendarSettings() {
 				calendarApp?.close();
 			}
 		},
+	});
+
+	game.settings.register(MODULE_ID, SETTING_BANNERS, {
+		name: "FBL_ENHANCEMENTS.CALENDAR.SETTINGS.BANNERS.NAME",
+		hint: "FBL_ENHANCEMENTS.CALENDAR.SETTINGS.BANNERS.HINT",
+		scope: "world",
+		config: true,
+		type: Boolean,
+		default: true,
 	});
 
 	game.settings.register(MODULE_ID, SETTING_GRANULARITY, {
@@ -371,6 +419,9 @@ class FblCalendarApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			moonLabel: l(`CALENDAR.${moon.phaseKey}`),
 			moonIllum: Math.round(moon.illumination * 100),
 			dayQuarterLabel: l(`CALENDAR.${DAY_QUARTERS[date.dayQuarterIndex].key}`),
+			seasonLabel: l(`CALENDAR.SEASONS.${getSeason(date.phaseIndex).toUpperCase()}`),
+			isLight: isLight(date),
+			lightLabel: l(isLight(date) ? "CALENDAR.LIGHT.LIGHT" : "CALENDAR.LIGHT.DARK"),
 			clock: `${pad(date.hour)}:${pad(date.minute)}`,
 			granularity,
 			granularityOptions,
@@ -527,6 +578,58 @@ function registerSceneControl() {
 }
 
 /* -------------------------------------------- */
+/*  Festival banners                            */
+/* -------------------------------------------- */
+
+/**
+ * Pick the banner threshold (10 / 3 / 0 days) to announce for a forward time step, or null.
+ * A jump that skips over thresholds of the same upcoming holiday announces the nearest crossed
+ * one; a jump into a new holiday's window only announces if it lands on a threshold.
+ */
+function festivalThresholdFor(prev, next) {
+	const away = daysUntilNextHoliday(next);
+	if (FESTIVAL_THRESHOLDS.includes(away)) return away;
+	if (upcomingHolidayPhase(prev) !== upcomingHolidayPhase(next)) return null;
+	const prevAway = daysUntilNextHoliday(prev);
+	const crossed = FESTIVAL_THRESHOLDS.filter((t) => prevAway > t && t >= away);
+	return crossed.length ? Math.min(...crossed) : null;
+}
+
+function showFestivalBanner(phaseIndex, daysAway) {
+	document.getElementById("fbl-festival-banner")?.remove();
+	const holiday = l(`CALENDAR.${DEFAULT_PHASES[phaseIndex].holiday}`);
+	const bodyKey = daysAway === 0 ? "TODAY" : daysAway === 1 ? "TOMORROW" : "IN_DAYS";
+	const body = l(`CALENDAR.BANNER.${bodyKey}`).replace("{days}", String(daysAway));
+
+	const root = document.createElement("div");
+	root.id = "fbl-festival-banner";
+	root.className = "fbl-festival-banner forbidden-lands";
+	const title = document.createElement("h2");
+	title.textContent = holiday;
+	const text = document.createElement("p");
+	text.textContent = body;
+	root.append(title, text);
+	document.body.append(root);
+
+	setTimeout(() => root.classList.add("fading"), 11000);
+	setTimeout(() => root.remove(), 12000);
+}
+
+/** Runs on every client: the day-boundary hook fires once per boundary on each of them. */
+function registerFestivalBanners() {
+	Hooks.on("fbl-enhancements.dayChanged", ({ worldTime, prevDayIndex, elapsedDays } = {}) => {
+		if (!game.settings.get(MODULE_ID, SETTING_BANNERS)) return;
+		if (!(elapsedDays > 0)) return;
+		const config = getConfig();
+		const next = worldTimeToDate(worldTime, config);
+		const prev = worldTimeToDate(worldTime - (next.dayIndex - prevDayIndex) * SECONDS_PER_DAY, config);
+		const threshold = festivalThresholdFor(prev, next);
+		if (threshold === null) return;
+		showFestivalBanner(upcomingHolidayPhase(next), threshold);
+	});
+}
+
+/* -------------------------------------------- */
 /*  Lifecycle                                    */
 /* -------------------------------------------- */
 
@@ -542,6 +645,7 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
 	ui.controls?.render();
+	registerFestivalBanners();
 
 	// Track the previous worldTime ourselves rather than trusting the hook's `dt`
 	// argument: across Foundry builds the second callback arg is not reliably the
@@ -584,6 +688,11 @@ Hooks.once("ready", () => {
 				isStrongPhase,
 				countFullMoons,
 				getConfig,
+				getSeason,
+				isLight,
+				daysUntilNextHoliday,
+				QUARTER_SECONDS,
+				SECONDS_PER_DAY,
 				openCalendar,
 				PHASES: DEFAULT_PHASES,
 			},

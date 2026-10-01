@@ -1,0 +1,39 @@
+<div class="forbidden-lands chat-item fbl-enh-stronghold-card">
+	<div class="border">
+		<div class="link-header"><h3>{{title}}</h3></div>
+		{{#if production.length}}
+		<h4>{{localize "FBL_ENHANCEMENTS.STRONGHOLD.CARD.PRODUCED"}}</h4>
+		<ul>
+			{{#each production}}<li><b>{{who}}:</b> {{text}}</li>{{/each}}
+		</ul>
+		{{/if}}
+		{{#if consumed}}<p><b>{{localize "FBL_ENHANCEMENTS.STRONGHOLD.CARD.CONSUMED"}}:</b> {{consumed}}</p>{{/if}}
+		{{#if harvest.length}}
+		<h4>{{localize "FBL_ENHANCEMENTS.STRONGHOLD.CARD.HARVEST"}}</h4>
+		<ul>
+			{{#each harvest}}<li><b>{{who}}:</b> {{text}}</li>{{/each}}
+		</ul>
+		{{/if}}
+		{{#if births.length}}
+		<h4>{{localize "FBL_ENHANCEMENTS.STRONGHOLD.CARD.BIRTHS"}}</h4>
+		<ul>
+			{{#each births}}<li {{#if over}}class="fbl-enh-over"{{/if}}>{{text}}</li>{{/each}}
+		</ul>
+		{{/if}}
+		{{#if salaryPaid}}<p><b>{{localize "FBL_ENHANCEMENTS.STRONGHOLD.CARD.SALARIES_PAID"}}:</b> {{salaryPaid}}</p>{{/if}}
+		{{#if unpaid.length}}
+		<h4 class="fbl-enh-over">{{localize "FBL_ENHANCEMENTS.STRONGHOLD.CARD.UNPAID"}}</h4>
+		<ul>
+			{{#each unpaid}}<li>{{this}}</li>{{/each}}
+		</ul>
+		{{/if}}
+		{{#if spoiled}}<p class="fbl-enh-over"><b>{{localize "FBL_ENHANCEMENTS.STRONGHOLD.CARD.SPOILED"}}:</b> {{spoiled}}</p>{{/if}}
+		{{#if soon.length}}
+		<h4>{{localize "FBL_ENHANCEMENTS.STRONGHOLD.CARD.SOON"}}</h4>
+		<ul>
+			{{#each soon}}<li>{{this}}</li>{{/each}}
+		</ul>
+		{{/if}}
+		{{#each notes}}<p>{{this}}</p>{{/each}}
+	</div>
+</div>

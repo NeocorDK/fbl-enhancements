@@ -154,21 +154,26 @@ export function getRarityLabel(rarity) {
 	return l(RARITY_LABELS[normalizeRarity(rarity)]);
 }
 
+/** An actor's purse as a plain `{gold,silver,copper}` object. */
+function purseOf(actor) {
+	const currency = actor.system?.currency ?? {};
+	return {
+		gold: Number(currency.gold?.value) || 0,
+		silver: Number(currency.silver?.value) || 0,
+		copper: Number(currency.copper?.value) || 0,
+	};
+}
+
 /**
- * Subtract a price from a purse, breaking a higher denomination into 10 of the next one
- * whenever the current denomination runs short — the same borrowing the system's own
+ * Subtract a price from a purse object, breaking a higher denomination into 10 of the next
+ * one whenever the current denomination runs short — the same borrowing the system's own
  * currency buttons perform. Preserves the rest of the purse instead of re-normalizing
  * it: 5 silver + 2 copper paying 12 copper leaves 4 silver + 0 copper.
  *
  * @returns {{gold:number,silver:number,copper:number}|null} null when unaffordable.
  */
-export function deductCoins(actor, price) {
-	const currency = actor.system?.currency ?? {};
-	const coins = [
-		Number(currency.gold?.value) || 0,
-		Number(currency.silver?.value) || 0,
-		Number(currency.copper?.value) || 0,
-	];
+export function deductFromPurse(purse, price) {
+	const coins = [Number(purse?.gold) || 0, Number(purse?.silver) || 0, Number(purse?.copper) || 0];
 	const cost = [price.gold, price.silver, price.copper];
 	for (let i = 0; i < coins.length; i++) coins[i] -= cost[i];
 
@@ -184,18 +189,27 @@ export function deductCoins(actor, price) {
 }
 
 /**
- * Add a price to a purse. Unlike `deductCoins`, a credit can never fail or need to
+ * Add a price to a purse object. Unlike `deductFromPurse`, a credit can never fail or need to
  * borrow — each denomination is simply added to independently, leaving the rest of the
- * purse's shape untouched (matching the "don't renormalize" philosophy of `deductCoins`).
+ * purse's shape untouched (matching the "don't renormalize" philosophy of the deduction).
  */
-export function creditCoins(actor, price) {
-	const currency = actor.system?.currency ?? {};
+export function addToPurse(purse, price) {
 	const p = normalizePrice(price);
 	return {
-		gold: (Number(currency.gold?.value) || 0) + p.gold,
-		silver: (Number(currency.silver?.value) || 0) + p.silver,
-		copper: (Number(currency.copper?.value) || 0) + p.copper,
+		gold: (Number(purse?.gold) || 0) + p.gold,
+		silver: (Number(purse?.silver) || 0) + p.silver,
+		copper: (Number(purse?.copper) || 0) + p.copper,
 	};
+}
+
+/** `deductFromPurse` over an actor's `system.currency`. Returns null when unaffordable. */
+export function deductCoins(actor, price) {
+	return deductFromPurse(purseOf(actor), price);
+}
+
+/** `addToPurse` over an actor's `system.currency`. */
+export function creditCoins(actor, price) {
+	return addToPurse(purseOf(actor), price);
 }
 
 /** Apply a -100..100 percent markup/discount to a copper amount, floored at 0. */

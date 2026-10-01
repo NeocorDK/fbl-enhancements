@@ -174,6 +174,10 @@
         "VISIBLE": {
           "NAME": "Calendar visible to players",
           "HINT": "Allow players to open and view the calendar. The GM can always change the time; players only view it."
+        },
+        "BANNERS": {
+          "NAME": "Faixas de festivais",
+          "HINT": "Mostra uma faixa a todos os jogadores 10 dias e 3 dias antes de cada festival e no próprio dia."
         }
       },
       "PHASES": {
@@ -238,6 +242,266 @@
         "DATE_DAY": "Day of phase",
         "DATE_QUARTER": "Time of day",
         "SAVE": "Save"
+      },
+      "SEASONS": {
+        "WINTER": "Inverno",
+        "SPRING": "Primavera",
+        "SUMMER": "Verão",
+        "AUTUMN": "Outono"
+      },
+      "LIGHT": {
+        "LIGHT": "Claro",
+        "DARK": "Escuro"
+      },
+      "BANNER": {
+        "TODAY": "Hoje é o festival.",
+        "TOMORROW": "Amanhã é o festival.",
+        "IN_DAYS": "O festival é em {days} dias."
+      }
+    },
+    "STRONGHOLD": {
+      "SETTINGS": {
+        "strongholdAutomation": {
+          "NAME": "Automação da fortaleza",
+          "HINT": "Simula produção, salários, deterioração, rebanhos e lembretes de cada fortaleza sempre que o tempo de jogo avança."
+        },
+        "strongholdRequireStaff": {
+          "NAME": "Exigir pessoal",
+          "HINT": "Os edifícios só produzem se houver um empregado adequado (ou um PJ marcado como trabalhando ali). Desligado: produzem sempre que estiverem ligados."
+        },
+        "strongholdChatMode": {
+          "NAME": "Relatório da fortaleza no chat",
+          "HINT": "Como os relatórios de produção são publicados no chat."
+        },
+        "strongholdChatGMOnly": {
+          "NAME": "Relatórios só para o Mestre",
+          "HINT": "Sussurrar relatórios e lembretes da fortaleza apenas ao Mestre."
+        },
+        "strongholdReminders": {
+          "NAME": "Lembretes semanais",
+          "HINT": "Enviar lembretes semanais: eventos, manutenção, fortaleza sem guarda, desabamento da mina e ataques a caçadores."
+        },
+        "strongholdEventTable": {
+          "NAME": "Tabela de eventos da fortaleza",
+          "HINT": "UUID de uma tabela (RollTable) vinculada no lembrete semanal de eventos (Guia do Mestre, p. 12). Vazio: sem link."
+        },
+        "strongholdSpoilage": {
+          "NAME": "Deterioração de alimentos",
+          "HINT": "Bens perecíveis da fortaleza estragam ao fim do prazo de validade (dez vezes mais com adega de raízes)."
+        },
+        "strongholdSpoilageWarnDays": {
+          "NAME": "Aviso de deterioração (dias)",
+          "HINT": "Avisar com tantos dias de antecedência para bens com validade de uma semana ou mais. 0 desliga os avisos."
+        },
+        "autoDefenseRating": {
+          "NAME": "Valor de defesa automático",
+          "HINT": "Calcula o valor de defesa da fortaleza a partir de guardas, edifícios defensivos e marcas de situação."
+        },
+        "CHAT_MODE": {
+          "OFF": "Desligado",
+          "ADVANCE": "Um resumo por avanço de tempo",
+          "DAILY": "Resumo diário"
+        }
+      },
+      "RESOURCES": {
+        "ironOre": "Minério de ferro",
+        "iron": "Ferro",
+        "stone": "Pedra",
+        "wood": "Madeira",
+        "glass": "Vidro",
+        "leather": "Couro",
+        "cloth": "Tecido",
+        "tallow": "Sebo",
+        "wool": "Lã",
+        "grain": "Grão",
+        "flour": "Farinha",
+        "meat": "Carne",
+        "vegetables": "Vegetais",
+        "fish": "Peixe",
+        "pelt": "Pele",
+        "bread": "Pão",
+        "herbs": "Ervas",
+        "food": "Comida"
+      },
+      "ANIMALS": {
+        "cow": "Vaca",
+        "pig": "Porco",
+        "sheep": "Ovelha"
+      },
+      "BUILDINGS": {
+        "bakery": "Padaria",
+        "forge": "Forja",
+        "mill": "Moinho",
+        "inn": "Estalagem",
+        "tailorShop": "Alfaiataria",
+        "tannery": "Curtume",
+        "quarry": "Pedreira",
+        "mine": "Mina",
+        "field": "Campo",
+        "garden": "Horta",
+        "pasture": "Pasto",
+        "pigsty": "Chiqueiro",
+        "sheepfold": "Aprisco",
+        "rootCellar": "Adega de raízes",
+        "ramparts": "Muralhas",
+        "portcullis": "Porta levadiça",
+        "guardTower": "Torre de guarda",
+        "moat": "Fosso",
+        "dovecote": "Pombal",
+        "dungeon": "Masmorra",
+        "gallows": "Forca",
+        "library": "Biblioteca",
+        "marketplace": "Mercado",
+        "scriptorium": "Scriptorium",
+        "shrine": "Santuário"
+      },
+      "HIRELINGS": {
+        "baker": "Padeiro",
+        "bowyer": "Arqueiro artesão",
+        "carpenter": "Carpinteiro",
+        "executioner": "Carrasco",
+        "farmer": "Fazendeiro",
+        "guard": "Guarda",
+        "handyman": "Faz-tudo",
+        "hunter": "Caçador",
+        "innkeeper": "Estalajadeiro",
+        "jailer": "Carcereiro",
+        "lumberjack": "Lenhador",
+        "masterBuilder": "Mestre construtor",
+        "miller": "Moleiro",
+        "miner": "Mineiro",
+        "quarryWorker": "Pedreiro",
+        "smith": "Ferreiro",
+        "tanner": "Curtidor",
+        "tailor": "Alfaiate"
+      },
+      "DEFENSE": {
+        "PCS": "Os PJs participam da defesa",
+        "GUARDS": "Guardas ({n})",
+        "HUNGRY": "Os guardas estão com fome",
+        "NONE": "Ainda sem bônus de defesa."
+      },
+      "CARD": {
+        "TITLE": "Relatório da fortaleza",
+        "DAILY_TITLE": "Relatório diário",
+        "PRODUCED": "Produzido",
+        "CONSUMED": "Consumido",
+        "HARVEST": "Colheita",
+        "BIRTHS": "Nascimentos",
+        "SALARIES_PAID": "Salários pagos",
+        "UNPAID": "Não foi possível pagar",
+        "SPOILED": "Estragou",
+        "SOON": "Vai estragar em breve",
+        "SOON_LINE": "{n} {name} vai estragar em {days} dia(s).",
+        "BIRTH_LINE": "{n} {name} nasceram ({formula}) — rebanho {head}/{cap}",
+        "NO_HARVEST": "{name} não foi trabalhado este ano: sem colheita.",
+        "SLAUGHTER": "Abate",
+        "SLAUGHTERED": "{n} {name} abatidos.",
+        "SHEAR": "Tosquia",
+        "SHEARED": "{n} ovelhas tosquiadas."
+      },
+      "REMINDER": {
+        "NONPAY": {
+          "TITLE": "Falta de pagamento",
+          "BODY": "O tesouro não conseguiu pagar estes empregados. Role 1D6 para cada um:"
+        },
+        "EVENTS": {
+          "TITLE": "Hora de rolar eventos",
+          "BODY": "A fama da fortaleza se espalha. A reputação, uma forca e empregados sem pagamento podem modificar a rolagem. Role apenas enquanto a fortaleza estiver guardada (Manual do Jogador, p. 176)."
+        },
+        "UPKEEP": {
+          "TITLE": "Manutenção",
+          "BODY": "Passou uma semana sem faz-tudo. Um PJ deve gastar um quarto de dia na manutenção e rolar ARTESANATO; em caso de falha, role na tabela:"
+        },
+        "UNGUARDED": {
+          "TITLE": "Fortaleza sem guarda",
+          "BODY": "Não há guardas nem PJs. Role na tabela desta semana:"
+        },
+        "MINE_COLLAPSE": {
+          "TITLE": "Teste de desabamento",
+          "BODY": "Passou uma semana de trabalho na mina. Role um dado de equipamento; 1 é um desabamento. Depois role um dado de equipamento por trabalhador: 1 significa preso (um PdM morre)."
+        },
+        "HUNTER_ATTACK": {
+          "TITLE": "Caçador: ataque de fera",
+          "BODY": "Passou uma semana de caça. Role um dado base por caçador; 1 significa que uma fera ataca. Role de novo: outro 1 e o caçador morre."
+        }
+      },
+      "TABLE": {
+        "NONPAY": {
+          "1": "O empregado vai embora e espalha boatos sobre sua avareza: adicione dois dados à próxima rolagem de eventos.",
+          "2": "O empregado vai embora e rouba algo valioso (o Mestre decide).",
+          "3": "O empregado convence todos os empregados, e todos desertam.",
+          "4": "O empregado fica mas não trabalha até ser pago. Role de novo se continuar sem pagamento após uma semana.",
+          "5": "O empregado continua trabalhando mas espalha boatos: a reputação conta um nível acima na próxima rolagem de eventos. Role toda semana.",
+          "6": "O empregado continua trabalhando sem reclamar. Role toda semana."
+        },
+        "UPKEEP": {
+          "1": "Um incêndio destrói 1D6 funções aleatórias. Role 1D6 por empregado; um 1 significa que ele morre.",
+          "2": "Uma função aleatória é arruinada e precisa ser reconstruída.",
+          "3": "Um empregado sofre um ferimento crítico (trauma contundente).",
+          "4": "Ratos comem 2D6 de comida.",
+          "5": "Telhado com goteira. No inverno ou outono todos sentem frio. O reparo leva um quarto de dia e uma rolagem de ARTESANATO.",
+          "6": "Nada acontece."
+        },
+        "UNGUARDED": {
+          "1": "Um príncipe ou chefe orc a ocupa; todos os empregados fogem; 2D6 soldados hostis a mantêm.",
+          "2": "Aventureiros rivais a tomam; os empregados fogem.",
+          "3": "Harpias fazem ninho, comem toda a comida, roubam coisas brilhantes e expulsam os empregados. A fortaleza precisa ser limpa e desocupada de novo.",
+          "4": "Um urso-cinzento faz uma toca; os empregados ficam, mas a evitam.",
+          "5": "Andarilhos fazem bagunça e roubam 2D6 de comida.",
+          "6": "Nada acontece."
+        }
+      },
+      "JUMP": {
+        "TITLE": "Grande salto no tempo",
+        "BODY": "Você está avançando {days} dia(s). Como as fortalezas devem tratar esse intervalo?",
+        "HINT": "“Simular” percorre cada quarto de dia (produção, salários, deterioração, nascimentos, lembretes). “Ignorar” move o relógio sem alterar nada. “Cancelar” devolve o tempo.",
+        "SIMULATE": "Simular tudo",
+        "SKIP": "Ignorar em silêncio",
+        "CANCEL": "Cancelar o salto"
+      },
+      "TREASURY": {
+        "INVALID": "Não foi possível concluir a transferência.",
+        "DENIED": "Você não tem permissão para esta transferência.",
+        "EMPTY": "Informe um valor.",
+        "NO_FUNDS": "Seu personagem não pode pagar isso.",
+        "NO_TREASURY": "O tesouro não tem tanto.",
+        "NO_GM": "Um Mestre precisa estar online para movimentar o tesouro.",
+        "NO_CHARACTER": "Atribua um personagem ou selecione um único token."
+      },
+      "SHEET": {
+        "NO_PERMISSION": "Você não tem permissão para alterar esta fortaleza.",
+        "CONFIRM": "Confirmar",
+        "DEPOSIT": "Depositar",
+        "WITHDRAW": "Sacar",
+        "TREASURY": "Tesouro",
+        "WAGES_PER_DAY": "Salários por dia",
+        "PCS_PRESENT": "PJs na fortaleza",
+        "GUARDS_HUNGRY": "Os guardas estão com fome",
+        "COL_ACTIVE": "Lig.",
+        "COL_OUTPUT": "Saída",
+        "COL_STAFF": "Pessoal",
+        "COL_PC": "PJ",
+        "COL_DEPLOY": "Fora",
+        "COL_OVERTIME": "HE",
+        "ACTIVE": "Automatizar este edifício",
+        "TARGET": "Produção máxima por quarto de dia trabalhado (até {max})",
+        "BULL": "Há um touro",
+        "SHEAR": "Tosquiar ovelhas ({n} prontas)",
+        "SLAUGHTER": "Abater",
+        "PC_STAFFED": "Um PJ trabalha aqui",
+        "DEPLOYED": "Trabalha fora da fortaleza",
+        "OVERTIME": "Hora extra (terceiro quarto de dia, salário dobrado)",
+        "UNPAID": "Sem pagamento",
+        "REPUTATION": "Bônus de reputação",
+        "HOW_MANY": "Quantos?",
+        "SHEAR_TITLE": "Tosquia",
+        "ROLE": "Função na fortaleza",
+        "ROLE_AUTO": "Automático: {name}",
+        "ROLE_NONE": "não reconhecido"
+      },
+      "ERROR": {
+        "TICK": "A automação da fortaleza {name} falhou. Veja o console do navegador (F12)."
       }
     }
   }

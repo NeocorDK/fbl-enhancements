@@ -38,7 +38,10 @@
 	</section>
 
 	<section class="fbl-cal-time">
-		<div class="fbl-cal-quarter">{{dayQuarterLabel}}</div>
+		<div class="fbl-cal-quarter">
+			<i class="fas {{#if isLight}}fa-sun{{else}}fa-moon{{/if}} fbl-cal-light {{#if isLight}}is-light{{else}}is-dark{{/if}}" data-tooltip="{{lightLabel}} · {{seasonLabel}}"></i>
+			{{dayQuarterLabel}}
+		</div>
 		<div class="fbl-cal-clock">{{clock}}</div>
 	</section>
 

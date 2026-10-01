@@ -1,0 +1,13 @@
+<div class="forbidden-lands chat-item fbl-enh-stronghold-card">
+	<div class="border">
+		<div class="link-header"><h3>{{title}}</h3></div>
+		<p>{{body}}</p>
+		{{#if names}}<p><b>{{names}}</b></p>{{/if}}
+		{{#if table.length}}
+		<ol class="fbl-enh-d6">
+			{{#each table}}<li>{{this}}</li>{{/each}}
+		</ol>
+		{{/if}}
+		{{#if link}}<p>{{{link}}}</p>{{/if}}
+	</div>
+</div>

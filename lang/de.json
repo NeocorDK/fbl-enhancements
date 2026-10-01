@@ -174,6 +174,10 @@
         "VISIBLE": {
           "NAME": "Calendar visible to players",
           "HINT": "Allow players to open and view the calendar. The GM can always change the time; players only view it."
+        },
+        "BANNERS": {
+          "NAME": "Festtags-Banner",
+          "HINT": "Zeigt allen Spielern 10 Tage, 3 Tage vor und am Tag jedes Festes ein Banner."
         }
       },
       "PHASES": {
@@ -238,6 +242,266 @@
         "DATE_DAY": "Day of phase",
         "DATE_QUARTER": "Time of day",
         "SAVE": "Save"
+      },
+      "SEASONS": {
+        "WINTER": "Winter",
+        "SPRING": "Frühling",
+        "SUMMER": "Sommer",
+        "AUTUMN": "Herbst"
+      },
+      "LIGHT": {
+        "LIGHT": "Hell",
+        "DARK": "Dunkel"
+      },
+      "BANNER": {
+        "TODAY": "Heute ist das Fest.",
+        "TOMORROW": "Morgen ist das Fest.",
+        "IN_DAYS": "Das Fest ist in {days} Tagen."
+      }
+    },
+    "STRONGHOLD": {
+      "SETTINGS": {
+        "strongholdAutomation": {
+          "NAME": "Festungs-Automatisierung",
+          "HINT": "Simuliert bei jedem Zeitfortschritt Produktion, Löhne, Verderb, Vieh und Erinnerungen für jede Festung."
+        },
+        "strongholdRequireStaff": {
+          "NAME": "Personal erforderlich",
+          "HINT": "Gebäude produzieren nur, wenn ein passender Gefolgsmann (oder ein dort arbeitender SC) vorhanden ist. Aus: Gebäude produzieren, solange sie eingeschaltet sind."
+        },
+        "strongholdChatMode": {
+          "NAME": "Festungsbericht im Chat",
+          "HINT": "Wie Produktionsberichte im Chat erscheinen."
+        },
+        "strongholdChatGMOnly": {
+          "NAME": "Berichte nur für den SL",
+          "HINT": "Festungsberichte und Erinnerungen nur an den SL flüstern."
+        },
+        "strongholdReminders": {
+          "NAME": "Wöchentliche Erinnerungen",
+          "HINT": "Wöchentliche Erinnerungen: Festungsereignisse, Instandhaltung, unbewachte Festung, Stolleneinsturz und Jägerangriffe."
+        },
+        "strongholdEventTable": {
+          "NAME": "Festungs-Ereignistabelle",
+          "HINT": "UUID einer Rolltabelle, die in der wöchentlichen Ereigniserinnerung verlinkt wird (Spielleiterhandbuch S. 12). Leer lassen für keinen Link."
+        },
+        "strongholdSpoilage": {
+          "NAME": "Nahrungsverderb",
+          "HINT": "Verderbliche Waren in der Festung verderben nach ihrer Haltbarkeit (zehnmal länger mit Wurzelkeller)."
+        },
+        "strongholdSpoilageWarnDays": {
+          "NAME": "Verderbwarnung (Tage)",
+          "HINT": "So viele Tage vorher warnen, bevor Waren mit einer Haltbarkeit von einer Woche oder mehr verderben. 0 schaltet Warnungen aus."
+        },
+        "autoDefenseRating": {
+          "NAME": "Automatische Verteidigungswertung",
+          "HINT": "Berechnet die Verteidigungswertung der Festung aus Wachen, Verteidigungsbauten und Situationsmarkierungen."
+        },
+        "CHAT_MODE": {
+          "OFF": "Aus",
+          "ADVANCE": "Eine Zusammenfassung pro Zeitfortschritt",
+          "DAILY": "Tägliche Zusammenfassung"
+        }
+      },
+      "RESOURCES": {
+        "ironOre": "Eisenerz",
+        "iron": "Eisen",
+        "stone": "Stein",
+        "wood": "Holz",
+        "glass": "Glas",
+        "leather": "Leder",
+        "cloth": "Stoff",
+        "tallow": "Talg",
+        "wool": "Wolle",
+        "grain": "Getreide",
+        "flour": "Mehl",
+        "meat": "Fleisch",
+        "vegetables": "Gemüse",
+        "fish": "Fisch",
+        "pelt": "Fell",
+        "bread": "Brot",
+        "herbs": "Kräuter",
+        "food": "Nahrung"
+      },
+      "ANIMALS": {
+        "cow": "Kuh",
+        "pig": "Schwein",
+        "sheep": "Schaf"
+      },
+      "BUILDINGS": {
+        "bakery": "Bäckerei",
+        "forge": "Schmiede",
+        "mill": "Mühle",
+        "inn": "Gasthaus",
+        "tailorShop": "Schneiderei",
+        "tannery": "Gerberei",
+        "quarry": "Steinbruch",
+        "mine": "Bergwerk",
+        "field": "Feld",
+        "garden": "Garten",
+        "pasture": "Weide",
+        "pigsty": "Schweinestall",
+        "sheepfold": "Schafstall",
+        "rootCellar": "Wurzelkeller",
+        "ramparts": "Wehrmauer",
+        "portcullis": "Fallgitter",
+        "guardTower": "Wachturm",
+        "moat": "Wassergraben",
+        "dovecote": "Taubenschlag",
+        "dungeon": "Verlies",
+        "gallows": "Galgen",
+        "library": "Bibliothek",
+        "marketplace": "Marktplatz",
+        "scriptorium": "Skriptorium",
+        "shrine": "Schrein"
+      },
+      "HIRELINGS": {
+        "baker": "Bäcker",
+        "bowyer": "Bogenbauer",
+        "carpenter": "Zimmermann",
+        "executioner": "Henker",
+        "farmer": "Bauer",
+        "guard": "Wache",
+        "handyman": "Hausmeister",
+        "hunter": "Jäger",
+        "innkeeper": "Wirt",
+        "jailer": "Kerkermeister",
+        "lumberjack": "Holzfäller",
+        "masterBuilder": "Baumeister",
+        "miller": "Müller",
+        "miner": "Bergmann",
+        "quarryWorker": "Steinbrecher",
+        "smith": "Schmied",
+        "tanner": "Gerber",
+        "tailor": "Schneider"
+      },
+      "DEFENSE": {
+        "PCS": "SC beteiligen sich an der Verteidigung",
+        "GUARDS": "Wachen ({n})",
+        "HUNGRY": "Wachen sind hungrig",
+        "NONE": "Noch keine Verteidigungsboni."
+      },
+      "CARD": {
+        "TITLE": "Festungsbericht",
+        "DAILY_TITLE": "Tagesbericht",
+        "PRODUCED": "Produziert",
+        "CONSUMED": "Verbraucht",
+        "HARVEST": "Ernte",
+        "BIRTHS": "Nachwuchs",
+        "SALARIES_PAID": "Löhne bezahlt",
+        "UNPAID": "Nicht bezahlbar",
+        "SPOILED": "Verdorben",
+        "SOON": "Verdirbt bald",
+        "SOON_LINE": "{n} {name} verdirbt in {days} Tag(en).",
+        "BIRTH_LINE": "{n} {name} geboren ({formula}) — Herde {head}/{cap}",
+        "NO_HARVEST": "{name} wurde dieses Jahr nicht bewirtschaftet: keine Ernte.",
+        "SLAUGHTER": "Schlachtung",
+        "SLAUGHTERED": "{n} {name} geschlachtet.",
+        "SHEAR": "Schur",
+        "SHEARED": "{n} Schafe geschoren."
+      },
+      "REMINDER": {
+        "NONPAY": {
+          "TITLE": "Nichtzahlung",
+          "BODY": "Die Kasse konnte diese Gefolgsleute nicht bezahlen. Würfle für jeden einen W6:"
+        },
+        "EVENTS": {
+          "TITLE": "Zeit für Ereignisse",
+          "BODY": "Die Kunde von der Festung verbreitet sich. Ansehen, ein Galgen und unbezahlte Gefolgsleute können den Wurf verändern. Nur würfeln, solange die Festung bewacht ist (Spielerhandbuch S. 176)."
+        },
+        "UPKEEP": {
+          "TITLE": "Instandhaltung",
+          "BODY": "Eine Woche ohne Hausmeister ist vergangen. Ein SC muss ein Viertel Tag für die Instandhaltung aufwenden und auf HANDWERK würfeln; bei einem Misserfolg würfle auf der Tabelle:"
+        },
+        "UNGUARDED": {
+          "TITLE": "Unbewachte Festung",
+          "BODY": "Weder Wachen noch SC sind anwesend. Würfle für diese Woche auf der Tabelle:"
+        },
+        "MINE_COLLAPSE": {
+          "TITLE": "Einsturzprüfung",
+          "BODY": "Eine Woche Arbeit im Bergwerk ist vergangen. Würfle einen Ausrüstungswürfel; eine 1 bedeutet Einsturz. Dann würfle für jeden Arbeiter einen Ausrüstungswürfel: eine 1 bedeutet verschüttet (ein NSC stirbt)."
+        },
+        "HUNTER_ATTACK": {
+          "TITLE": "Jäger: Angriff eines wilden Tiers",
+          "BODY": "Eine Woche Jagd ist vergangen. Würfle einen Basiswürfel pro Jäger; eine 1 bedeutet, ein Tier greift an. Würfle erneut: eine weitere 1 bedeutet, der Jäger stirbt."
+        }
+      },
+      "TABLE": {
+        "NONPAY": {
+          "1": "Der Gefolgsmann geht und verbreitet Gerüchte über deinen Geiz: Füge dem nächsten Festungsereignis-Wurf zwei Würfel hinzu.",
+          "2": "Der Gefolgsmann geht und stiehlt etwas Wertvolles (SL entscheidet).",
+          "3": "Der Gefolgsmann wiegelt alle Gefolgsleute auf, und alle laufen davon.",
+          "4": "Der Gefolgsmann bleibt, arbeitet aber nicht, bis er bezahlt wird. Nach einer Woche erneut würfeln.",
+          "5": "Der Gefolgsmann arbeitet weiter, verbreitet aber Gerüchte: Das Ansehen zählt beim nächsten Ereigniswurf eine Stufe höher. Wöchentlich erneut würfeln.",
+          "6": "Der Gefolgsmann arbeitet ohne Klagen weiter. Wöchentlich erneut würfeln."
+        },
+        "UPKEEP": {
+          "1": "Feuer zerstört W6 zufällige Funktionen. Würfle einen W6 pro Gefolgsmann; bei einer 1 stirbt er.",
+          "2": "Eine zufällige Funktion ist ruiniert und muss neu gebaut werden.",
+          "3": "Ein Gefolgsmann erleidet eine kritische Verletzung (stumpfes Trauma).",
+          "4": "Ratten fressen 2W6 Nahrung.",
+          "5": "Undichtes Dach. Im Winter oder Herbst frieren alle. Die Reparatur braucht ein Viertel Tag und einen HANDWERK-Wurf.",
+          "6": "Nichts geschieht."
+        },
+        "UNGUARDED": {
+          "1": "Ein Prinz oder Orkhäuptling besetzt sie; alle Gefolgsleute fliehen; 2W6 feindliche Soldaten halten sie.",
+          "2": "Rivalisierende Abenteurer nehmen sie ein; die Gefolgsleute fliehen.",
+          "3": "Harpyien nisten, fressen alle Nahrung, stehlen Glänzendes und vertreiben die Gefolgsleute. Die Festung muss erneut geräumt und gereinigt werden.",
+          "4": "Ein Grauer Bär richtet sich eine Höhle ein; die Gefolgsleute bleiben, meiden sie aber.",
+          "5": "Wanderer richten Unordnung an und stehlen 2W6 Nahrung.",
+          "6": "Nichts geschieht."
+        }
+      },
+      "JUMP": {
+        "TITLE": "Großer Zeitsprung",
+        "BODY": "Du springst {days} Tag(e) vor. Wie sollen die Festungen die Lücke behandeln?",
+        "HINT": "„Simulieren“ durchläuft jedes Viertel eines Tages (Produktion, Löhne, Verderb, Nachwuchs, Erinnerungen). „Überspringen“ verschiebt die Uhr, ohne etwas zu ändern. „Abbrechen“ setzt die Zeit zurück.",
+        "SIMULATE": "Alles simulieren",
+        "SKIP": "Still überspringen",
+        "CANCEL": "Sprung abbrechen"
+      },
+      "TREASURY": {
+        "INVALID": "Die Übertragung konnte nicht abgeschlossen werden.",
+        "DENIED": "Du hast keine Berechtigung für diese Übertragung.",
+        "EMPTY": "Gib einen Betrag ein.",
+        "NO_FUNDS": "Dein Charakter kann sich das nicht leisten.",
+        "NO_TREASURY": "Die Kasse enthält nicht so viel.",
+        "NO_GM": "Ein SL muss online sein, um die Kasse zu bewegen.",
+        "NO_CHARACTER": "Weise zuerst einen Charakter zu oder wähle genau ein Token."
+      },
+      "SHEET": {
+        "NO_PERMISSION": "Du darfst diese Festung nicht ändern.",
+        "CONFIRM": "Bestätigen",
+        "DEPOSIT": "Einzahlen",
+        "WITHDRAW": "Abheben",
+        "TREASURY": "Kasse",
+        "WAGES_PER_DAY": "Löhne pro Tag",
+        "PCS_PRESENT": "SC in der Festung",
+        "GUARDS_HUNGRY": "Wachen sind hungrig",
+        "COL_ACTIVE": "An",
+        "COL_OUTPUT": "Ertrag",
+        "COL_STAFF": "Personal",
+        "COL_PC": "SC",
+        "COL_DEPLOY": "Aus",
+        "COL_OVERTIME": "ÜS",
+        "ACTIVE": "Dieses Gebäude automatisieren",
+        "TARGET": "Maximaler Ertrag pro Arbeitsviertel (bis {max})",
+        "BULL": "Ein Bulle ist vorhanden",
+        "SHEAR": "Schafe scheren ({n} bereit)",
+        "SLAUGHTER": "Schlachten",
+        "PC_STAFFED": "Ein SC arbeitet hier",
+        "DEPLOYED": "Arbeitet außerhalb der Festung",
+        "OVERTIME": "Überstunden (drittes Tagesviertel, doppelter Lohn)",
+        "UNPAID": "Nicht bezahlt",
+        "REPUTATION": "Ansehensbonus",
+        "HOW_MANY": "Wie viele?",
+        "SHEAR_TITLE": "Schur",
+        "ROLE": "Festungsrolle",
+        "ROLE_AUTO": "Automatisch: {name}",
+        "ROLE_NONE": "nicht erkannt"
+      },
+      "ERROR": {
+        "TICK": "Die Festungs-Automatisierung für {name} ist fehlgeschlagen. Details in der Browserkonsole (F12)."
       }
     }
   }

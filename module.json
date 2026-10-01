@@ -3,7 +3,7 @@
     "name":  "fbl-enhancements",
     "title":  "Forbidden Lands Enhancements",
     "description":  "Optional automation and combat enhancements for Forbidden Lands.",
-    "version":  "0.14.0",
+    "version":  "0.14.1",
     "authors":  [
                     {
                         "name":  "NeocorDK"
@@ -19,12 +19,15 @@
                       "scripts/calendar.js",
                       "scripts/economy.js",
                       "scripts/merchant-trade.js",
-                      "scripts/merchant.js"
+                      "scripts/merchant.js",
+                      "scripts/stronghold.js",
+                      "scripts/stronghold-sheet.js"
                   ],
     "styles":  [
                    "styles/fbl-enhancements.css",
                    "styles/fbl-calendar.css",
-                   "styles/fbl-merchant.css"
+                   "styles/fbl-merchant.css",
+                   "styles/fbl-stronghold.css"
                ],
     "documentTypes":  {
                           "Actor":  {
@@ -79,5 +82,5 @@
     "socket": true,
     "url":  "https://github.com/NeocorDK/fbl-enhancements",
     "manifest":  "https://raw.githubusercontent.com/NeocorDK/fbl-enhancements/v14/module.json",
-    "download":  "https://github.com/NeocorDK/fbl-enhancements/releases/download/v0.14.0/fbl-enhancements.zip"
+    "download":  "https://github.com/NeocorDK/fbl-enhancements/releases/download/v0.14.1/fbl-enhancements.zip"
 }
