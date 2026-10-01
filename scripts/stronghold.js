@@ -216,14 +216,21 @@ function hirelingQty(actor, roleKey, { includeDeployed = true } = {}) {
 	return total;
 }
 
-/** Daily wage of a hireling item in copper (own salary text first, then the book rate). */
-export function hirelingDailyCopper(item) {
-	const def = HIRELINGS[keyOf(item)];
-	if (def?.perEvent) return 0;
+/**
+ * Daily wage rate of one hireling item, in copper, read ONLY from the item's own Salary field
+ * ("5 copper", "1 silver"). An empty or unreadable field means the hireling works unpaid — for
+ * example a player character who stays in the stronghold — whatever their role is.
+ */
+export function hirelingRateCopper(item) {
+	if (HIRELINGS[keyOf(item)]?.perEvent) return 0;
 	const parsed = parseCost(item.system?.salary);
-	const rate = parsed ? toCopper(parsed) : (def?.salaryCopper ?? 0);
+	return parsed ? toCopper(parsed) : 0;
+}
+
+/** Daily wage of a hireling item in copper, for its whole quantity (and overtime, if any). */
+export function hirelingDailyCopper(item) {
 	const factor = itemFlags(item).overtime ? OVERTIME_SALARY_FACTOR : 1;
-	return rate * Math.max(0, num(item.system?.quantity)) * factor;
+	return hirelingRateCopper(item) * Math.max(0, num(item.system?.quantity)) * factor;
 }
 
 export function totalDailyCopper(actor) {
@@ -460,8 +467,7 @@ function paySalaries(st, q, date) {
 		if (h.def?.perEvent || h.qty <= 0 || h.flags.paidDay === day) continue;
 		if (dq !== Q_MORNING && !(working || (dq === Q_EVENING && h.overtime))) continue;
 
-		const parsed = parseCost(h.item.system?.salary);
-		const rate = parsed ? toCopper(parsed) : (h.def?.salaryCopper ?? 0);
+		const rate = hirelingRateCopper(h.item);
 		if (!rate) continue;
 		const owed = rate * h.qty * (h.overtime ? OVERTIME_SALARY_FACTOR : 1);
 

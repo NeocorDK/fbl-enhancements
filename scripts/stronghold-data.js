@@ -120,29 +120,29 @@ export const BUILDINGS = {
 /* -------------------------------------------- */
 
 /**
- * `salaryCopper` = book salary per day (used when the item's own salary text is empty or
- * unparsable). `perEvent` = paid per job, never charged daily. `field` = works outside the
- * stronghold while "deployed", producing `outputs` per working Quarter Day.
+ * `perEvent` = paid per job, never charged daily. `field` = works outside the stronghold
+ * while "deployed", producing `outputs` per working Quarter Day. Wages are NOT stored here: they
+ * are read from each hireling item's own Salary field (an empty field means unpaid work).
  */
 export const HIRELINGS = {
-	baker: { salaryCopper: 6, aliases: ["baker", "bäcker", "пекарь", "пекаря", "panadero", "padeiro"] },
-	bowyer: { salaryCopper: 10, aliases: ["bowyer", "bogenbauer", "лучный мастер", "arquero artesano"] },
-	carpenter: { salaryCopper: 7, aliases: ["carpenter", "zimmermann", "плотник", "carpintero", "carpinteiro"] },
-	executioner: { salaryCopper: 10, perEvent: true, aliases: ["executioner", "henker", "палач", "verdugo", "carrasco"] },
-	farmer: { salaryCopper: 5, aliases: ["farmer", "bauer", "фермер", "земледелец", "granjero", "agricultor", "fazendeiro"] },
-	guard: { salaryCopper: 10, aliases: ["guard", "wache", "wächter", "стражник", "страж", "guardia", "guarda"] },
-	handyman: { salaryCopper: 3, aliases: ["handyman", "hausmeister", "handwerker", "разнорабочий", "manitas", "faz-tudo"] },
-	hunter: { salaryCopper: 6, field: { outputs: { meat: 1, pelt: 1 } }, reminder: "hunterAttack", aliases: ["hunter", "jäger", "охотник", "cazador", "caçador", "cacador"] },
-	innkeeper: { salaryCopper: 12, aliases: ["innkeeper", "wirt", "трактирщик", "хозяин таверны", "posadero", "estalajadeiro"] },
-	jailer: { salaryCopper: 8, aliases: ["jailer", "kerkermeister", "тюремщик", "carcelero", "carcereiro"] },
-	lumberjack: { salaryCopper: 4, field: { outputs: { wood: 2 } }, aliases: ["lumberjack", "holzfäller", "лесоруб", "лесорубы", "leñador", "lenador", "lenhador"] },
-	masterBuilder: { salaryCopper: 20, aliases: ["master builder", "baumeister", "мастер-строитель", "мастер строитель", "maestro constructor", "mestre construtor"] },
-	miller: { salaryCopper: 8, aliases: ["miller", "müller", "мельник", "molinero", "moleiro"] },
-	miner: { salaryCopper: 4, aliases: ["miner", "bergmann", "шахтер", "шахтёр", "minero", "mineiro"] },
-	quarryWorker: { salaryCopper: 3, aliases: ["quarry worker", "steinbrecher", "каменотес", "каменолом", "cantero", "pedreiro"] },
-	smith: { salaryCopper: 10, aliases: ["smith", "schmied", "кузнец", "herrero", "ferreiro"] },
-	tanner: { salaryCopper: 6, aliases: ["tanner", "gerber", "дубильщик", "curtidor"] },
-	tailor: { salaryCopper: 8, aliases: ["tailor", "schneider", "портной", "sastre", "alfaiate"] },
+	baker: { aliases: ["baker", "bäcker", "пекарь", "пекаря", "panadero", "padeiro"] },
+	bowyer: { aliases: ["bowyer", "bogenbauer", "лучный мастер", "arquero artesano"] },
+	carpenter: { aliases: ["carpenter", "zimmermann", "плотник", "carpintero", "carpinteiro"] },
+	executioner: { perEvent: true, aliases: ["executioner", "henker", "палач", "verdugo", "carrasco"] },
+	farmer: { aliases: ["farmer", "bauer", "фермер", "земледелец", "granjero", "agricultor", "fazendeiro"] },
+	guard: { aliases: ["guard", "wache", "wächter", "стражник", "страж", "guardia", "guarda"] },
+	handyman: { aliases: ["handyman", "hausmeister", "handwerker", "разнорабочий", "manitas", "faz-tudo"] },
+	hunter: { field: { outputs: { meat: 1, pelt: 1 } }, reminder: "hunterAttack", aliases: ["hunter", "jäger", "охотник", "cazador", "caçador", "cacador"] },
+	innkeeper: { aliases: ["innkeeper", "wirt", "трактирщик", "хозяин таверны", "posadero", "estalajadeiro"] },
+	jailer: { aliases: ["jailer", "kerkermeister", "тюремщик", "carcelero", "carcereiro"] },
+	lumberjack: { field: { outputs: { wood: 2 } }, aliases: ["lumberjack", "holzfäller", "лесоруб", "лесорубы", "leñador", "lenador", "lenhador"] },
+	masterBuilder: { aliases: ["master builder", "baumeister", "мастер-строитель", "мастер строитель", "maestro constructor", "mestre construtor"] },
+	miller: { aliases: ["miller", "müller", "мельник", "molinero", "moleiro"] },
+	miner: { aliases: ["miner", "bergmann", "шахтер", "шахтёр", "minero", "mineiro"] },
+	quarryWorker: { aliases: ["quarry worker", "steinbrecher", "каменотес", "каменолом", "cantero", "pedreiro"] },
+	smith: { aliases: ["smith", "schmied", "кузнец", "herrero", "ferreiro"] },
+	tanner: { aliases: ["tanner", "gerber", "дубильщик", "curtidor"] },
+	tailor: { aliases: ["tailor", "schneider", "портной", "sastre", "alfaiate"] },
 };
 
 /* -------------------------------------------- */

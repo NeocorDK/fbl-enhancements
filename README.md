@@ -232,8 +232,9 @@ setting the module needs is stored in its own flags. The stronghold sheet itself
 - **Wages and treasury.** Each stronghold has a treasury (gold / silver / copper) that characters
   fund with *Deposit* and take from with *Withdraw*; players' transfers are relayed through the GM.
   Hirelings are paid once a day from the treasury (every morning, or at the first working Quarter
-  Day if they have not been paid yet) at the salary written on the hireling item, or the book rate
-  when it is empty. A hireling the treasury cannot pay is flagged, **does not work (or guard)** until
+  Day if they have not been paid yet), using the amount in the hireling's own **Salary** field
+  (`5 copper`, `1 silver`, …). An empty Salary means the hireling works unpaid — useful for a player
+  character who stays in the stronghold — whatever their role. A hireling the treasury cannot pay is flagged, **does not work (or guard)** until
   paid, and the Non-Payment table is posted, again each week until paid.
 - **Livestock.** Cows give 1 Food each per morning, and every animal herd gives birth on the Day of
   Awakening (cows only with a bull). Slaughter and shearing are buttons on the pen's row (a flock
