@@ -11,6 +11,7 @@
 	{{#if empty}}
 		<p class="merchant-empty">{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.EMPTY"}}</p>
 	{{else}}
+		<div class="review-scroll">
 		<table class="cart-table">
 			<thead>
 				<tr>
@@ -53,6 +54,7 @@
 				{{/each}}
 			</tbody>
 		</table>
+		</div>
 		<div class="cart-total">
 			{{localize "FBL_ENHANCEMENTS.MERCHANT.REVIEW.TOTAL"}}: {{totalLabel}}
 		</div>

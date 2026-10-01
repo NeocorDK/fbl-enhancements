@@ -696,6 +696,55 @@
 	cursor: not-allowed;
 }
 
+/* --- Long lists: the item table scrolls; the total and the Accept/Reject buttons stay put ---
+ *
+ * The window is height:auto, so without a cap it grows past the screen and pushes the buttons
+ * out of reach. Cap the window to the viewport, turn the content area into a column, and let
+ * only the table wrapper scroll.
+ */
+.fbl-merchant-sell-review {
+	max-height: 92vh;
+}
+
+.fbl-merchant-sell-review .window-content {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.fbl-merchant-sell-review .fbl-merchant {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.fbl-merchant-sell-review .review-subtitle,
+.fbl-merchant-sell-review .cart-total,
+.fbl-merchant-sell-review .review-buttons {
+	flex: 0 0 auto;
+}
+
+.fbl-merchant-sell-review .review-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+/* The table itself is overflow:hidden, which would make it (not .review-scroll) the sticky
+   container; undo that here and give the pinned header an opaque background. */
+.fbl-merchant-sell-review .review-scroll .cart-table {
+	overflow: visible;
+}
+
+.fbl-merchant-sell-review .review-scroll .cart-table thead th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background: #e8e0cd !important;
+}
+
 /* --- Per-merchant settings dialog ---
  *
  * Same universal, `!important`-backed treatment as the sale-review dialog above (see
